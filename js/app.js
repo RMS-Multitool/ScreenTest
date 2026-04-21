@@ -877,6 +877,20 @@ const ScreenTest = (() => {
     const toH = (wPct) => wPct * (VENUE.w / VENUE.h) / builder.ratio;
     const toW = (hPct) => hPct * builder.ratio / (VENUE.w / VENUE.h);
 
+    function applyRatioToBox() {
+      if (!builder.ratio) return;
+      const screenAspect = VENUE.w / VENUE.h;
+      let { left, top, w } = builder.fg;
+      let newH = w * screenAspect / builder.ratio;
+      if (newH > 100 - top) {
+        newH = 100 - top;
+        w = clamp(newH * builder.ratio / screenAspect, MIN, 100 - left);
+        newH = w * screenAspect / builder.ratio;
+      }
+      builder.fg = { left, top, w, h: Math.max(MIN, newH) };
+      updateBuilderBox();
+    }
+
     function updateRatioLabel() {
       const rw = parseInt(resW.value), rh = parseInt(resH.value);
       if (rw > 0 && rh > 0) {
@@ -885,6 +899,7 @@ const ScreenTest = (() => {
         const d = g(rw, rh);
         ratioLbl.textContent = (rw/d) + ':' + (rh/d);
         ratioLbl.style.display = '';
+        applyRatioToBox();
       } else {
         builder.ratio = null;
         ratioLbl.style.display = 'none';
