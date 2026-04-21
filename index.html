@@ -37,15 +37,9 @@
             <div class="field-label">Resolution Preset</div>
             <div id="res-presets" class="res-presets"></div>
           </div>
-          <div class="field">
-            <div class="field-label">Custom Resolution</div>
-            <div class="custom-res-row">
-              <input id="custom-w" class="input" type="number" min="100" max="7680" value="3456" placeholder="Width">
-              <span>×</span>
-              <input id="custom-h" class="input" type="number" min="100" max="4320" value="1152" placeholder="Height">
-              <span class="text-muted" style="font-size:10px">px</span>
-            </div>
-          </div>
+          <!-- hidden inputs keep JS happy without a custom res UI -->
+          <input id="custom-w" type="hidden" value="3456">
+          <input id="custom-h" type="hidden" value="1152">
           <div class="field-row" style="gap:16px;flex-wrap:wrap">
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
               <input id="safe-area-toggle" type="checkbox"> Safe area

@@ -17,9 +17,8 @@ const ScreenTest = (() => {
   let library = [];
 
   const RES_PRESETS = [
-    { label: 'Venue Screen — 3456×1152', w: 3456, h: 1152, venue: true },
-    { label: '1920×1080 (HD)',            w: 1920, h: 1080 },
-    { label: '1280×720 (HD Ready)',       w: 1280, h: 720  }
+    { label: 'Full Screen — 3456×1152', w: 3456, h: 1152, venue: true },
+    { label: 'PIP — 1920×1080',         w: 1920, h: 1080 }
   ];
 
   const HOLDINGS = [
