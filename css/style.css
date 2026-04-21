@@ -655,7 +655,7 @@ label { user-select: none; }
 }
 
 /* PIP border indicator */
-.layer-fg.show-border { outline: 2px solid rgba(0, 212, 122, 0.5); outline-offset: -2px; }
+.layer-fg.show-border { outline: 3px solid rgba(0, 212, 122, 0.9); outline-offset: -3px; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.6); }
 
 .layer-placeholder {
   width: 100%;

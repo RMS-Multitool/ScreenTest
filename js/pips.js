@@ -5,55 +5,8 @@ const PipPresets = (() => {
   // fg: null means PIP layer is hidden (background only).
   // Omitting a side key (left/right, top/bottom) means it is not constrained from that edge.
   const PRESETS = [
-    { id: 'none',         name: 'Background Only',   group: 'Basic',         fg: null },
-    { id: 'fg-full',      name: 'Foreground Full',   group: 'Basic',         fg: { top: 0,  left: 0,  w: 100, h: 100 } },
-
-    { id: 'q-tl',         name: 'Top Left ¼',        group: 'Quarter',       fg: { top: 0,  left: 0,  w: 50,  h: 50  } },
-    { id: 'q-tr',         name: 'Top Right ¼',       group: 'Quarter',       fg: { top: 0,  right: 0, w: 50,  h: 50  } },
-    { id: 'q-bl',         name: 'Bottom Left ¼',     group: 'Quarter',       fg: { bot: 0,  left: 0,  w: 50,  h: 50  } },
-    { id: 'q-br',         name: 'Bottom Right ¼',    group: 'Quarter',       fg: { bot: 0,  right: 0, w: 50,  h: 50  } },
-
-    { id: 'split-l',      name: 'Left Half',         group: 'Split Screen',  fg: { top: 0,  left: 0,  w: 50,  h: 100 } },
-    { id: 'split-r',      name: 'Right Half',        group: 'Split Screen',  fg: { top: 0,  right: 0, w: 50,  h: 100 } },
-    { id: 'split-t',      name: 'Top Half',          group: 'Split Screen',  fg: { top: 0,  left: 0,  w: 100, h: 50  } },
-    { id: 'split-b',      name: 'Bottom Half',       group: 'Split Screen',  fg: { bot: 0,  left: 0,  w: 100, h: 50  } },
-
-    { id: 'banner-lo15',  name: 'Lower Banner 15%',  group: 'Banners',       fg: { bot: 0,  left: 0,  w: 100, h: 15  } },
-    { id: 'banner-lo25',  name: 'Lower Banner 25%',  group: 'Banners',       fg: { bot: 0,  left: 0,  w: 100, h: 25  } },
-    { id: 'banner-lo33',  name: 'Lower Third 33%',   group: 'Banners',       fg: { bot: 0,  left: 0,  w: 100, h: 33  } },
-    { id: 'banner-hi15',  name: 'Upper Banner 15%',  group: 'Banners',       fg: { top: 0,  left: 0,  w: 100, h: 15  } },
-    { id: 'banner-hi25',  name: 'Upper Banner 25%',  group: 'Banners',       fg: { top: 0,  left: 0,  w: 100, h: 25  } },
-
-    { id: 'pip-sm-br',    name: 'PIP Small BR',      group: 'PIP Overlays',  fg: { bot: 5,  right: 5, w: 25,  h: 25  } },
-    { id: 'pip-sm-bl',    name: 'PIP Small BL',      group: 'PIP Overlays',  fg: { bot: 5,  left: 5,  w: 25,  h: 25  } },
-    { id: 'pip-sm-tr',    name: 'PIP Small TR',      group: 'PIP Overlays',  fg: { top: 5,  right: 5, w: 25,  h: 25  } },
-    { id: 'pip-sm-tl',    name: 'PIP Small TL',      group: 'PIP Overlays',  fg: { top: 5,  left: 5,  w: 25,  h: 25  } },
-    { id: 'pip-med-br',   name: 'PIP Medium BR',     group: 'PIP Overlays',  fg: { bot: 5,  right: 5, w: 35,  h: 35  } },
-    { id: 'pip-med-bl',   name: 'PIP Medium BL',     group: 'PIP Overlays',  fg: { bot: 5,  left: 5,  w: 35,  h: 35  } },
-    { id: 'pip-center',   name: 'Center Box 50%',    group: 'PIP Overlays',  fg: { top: 25, left: 25, w: 50,  h: 50  } },
-    { id: 'pip-center-sm',name: 'Center Box 33%',    group: 'PIP Overlays',  fg: { top: 33, left: 33, w: 33,  h: 33  } },
-
-    // Dual PIP presets — slots: array of two fg descriptors
-    { id: 'dual-side-side',  name: 'Side by Side',      group: 'Dual PIP',
-      slots: [
-        { top: 0, left: 0,  w: 50, h: 100 },
-        { top: 0, right: 0, w: 50, h: 100 }
-      ] },
-    { id: 'dual-corners',    name: 'Corners (TL/BR)',   group: 'Dual PIP',
-      slots: [
-        { top: 5,  left: 5,  w: 35, h: 35 },
-        { bot: 5,  right: 5, w: 35, h: 35 }
-      ] },
-    { id: 'dual-pip-br-bl',  name: 'PIP BL + BR',       group: 'Dual PIP',
-      slots: [
-        { bot: 5,  left: 5,  w: 28, h: 28 },
-        { bot: 5,  right: 5, w: 28, h: 28 }
-      ] },
-    { id: 'dual-banner-pip', name: 'Lower Banner + PIP', group: 'Dual PIP',
-      slots: [
-        { bot: 0,  left: 0,  w: 100, h: 20 },
-        { top: 5,  right: 5, w: 30,  h: 35 }
-      ] },
+    { id: 'none',    name: 'Background Only', group: 'Basic', fg: null },
+    { id: 'fg-full', name: 'Foreground Full', group: 'Basic', fg: { top: 0, left: 0, w: 100, h: 100 } },
   ];
 
   // Returns true if preset uses dual slots
