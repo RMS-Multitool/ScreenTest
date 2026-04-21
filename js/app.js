@@ -175,7 +175,7 @@ const ScreenTest = (() => {
   }
 
   function selectPip(id) {
-    const FADE = 400;
+    const FADE = 600;
     const wasVisible = el.layerFg.style.display !== 'none';
 
     const doApply = () => {
