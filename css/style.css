@@ -650,9 +650,9 @@ label { user-select: none; }
 }
 
 .layer-bg { z-index: 1; }
-.layer-fg { z-index: 2; transition: opacity 1s ease; }
+.layer-fg { z-index: 2; transition: opacity 1.5s ease-in-out; }
 /* Second PIP slot (dual PIP presets) */
-.pip-slot  { z-index: 3; transition: opacity 1s ease; }
+.pip-slot  { z-index: 3; transition: opacity 1.5s ease-in-out; }
 
 .layer img,
 .layer video {
