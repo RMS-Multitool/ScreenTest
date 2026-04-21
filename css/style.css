@@ -654,8 +654,16 @@ label { user-select: none; }
   height: 100%;
 }
 
-/* PIP border indicator */
-.layer-fg.show-border { outline: 3px solid rgba(0, 212, 122, 0.9); outline-offset: -3px; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.6); }
+/* PIP border indicator — ::before sits on top of any img/video inside the layer */
+.layer-fg.show-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px solid #00d47a;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.55), 0 0 0 2px rgba(0,0,0,0.55);
+  pointer-events: none;
+  z-index: 10;
+}
 
 .layer-placeholder {
   width: 100%;
