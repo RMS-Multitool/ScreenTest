@@ -813,6 +813,12 @@ const ScreenTest = (() => {
       input.click();
     };
 
+    const btnAdd = document.createElement('button');
+    btnAdd.className = 'btn-primary';
+    btnAdd.textContent = '+ New PIP';
+    btnAdd.onclick = openPipBuilder;
+
+    toolbar.appendChild(btnAdd);
     toolbar.appendChild(btnExport);
     toolbar.appendChild(btnImport);
     wrap.appendChild(toolbar);

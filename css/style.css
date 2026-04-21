@@ -975,7 +975,8 @@ label { user-select: none; }
   gap: 6px;
   margin-top: 8px;
 }
-.pip-custom-toolbar .btn-secondary {
+.pip-custom-toolbar .btn-secondary,
+.pip-custom-toolbar .btn-primary {
   font-size: 10px;
   padding: 3px 8px;
   flex: 1;
