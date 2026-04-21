@@ -440,104 +440,153 @@ const ScreenTest = (() => {
   // ── Export Template ─────────────────────────────────────────────
   function exportTemplate() {
     const TW = 3456, TH = 1152;
+    const PHYS_W = 9, PHYS_H = 3;
     const pip = getPipById(state.pip);
     const canvas = document.createElement('canvas');
     canvas.width = TW; canvas.height = TH;
     const ctx = canvas.getContext('2d');
 
-    // Dark background
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+    const aspectRatio = (w, h) => {
+      const rw = Math.round(w), rh = Math.round(h), g = gcd(rw, rh);
+      return `${rw / g}:${rh / g}`;
+    };
+    const toM = (px, axis) => (px / (axis === 'x' ? TW : TH) * (axis === 'x' ? PHYS_W : PHYS_H)).toFixed(2) + 'm';
+
+    // Background + grid
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, TW, TH);
-
-    // Subtle 144px grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 1;
     for (let x = 0; x <= TW; x += 144) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, TH); ctx.stroke(); }
     for (let y = 0; y <= TH; y += 144) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke(); }
 
-    const drawDashedRect = (x, y, w, h, color) => {
+    const dashedRect = (x, y, w, h, color, lw = 4) => {
       ctx.save();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = color; ctx.lineWidth = lw;
       ctx.setLineDash([20, 10]);
-      ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+      ctx.strokeRect(x + lw / 2, y + lw / 2, w - lw, h - lw);
       ctx.restore();
     };
 
-    const drawLabel = (text, x, y, color, size) => {
-      ctx.save();
-      ctx.fillStyle = color;
-      ctx.font = `600 ${size}px Barlow, Arial, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(text, x, y);
-      ctx.restore();
-    };
+    const drawZone = (x, y, w, h, color, title) => {
+      const fromRight  = TW - x - w;
+      const fromBottom = TH - y - h;
+      const ar = aspectRatio(w, h);
+      const pctW = (w / TW * 100).toFixed(1);
+      const pctH = (h / TH * 100).toFixed(1);
 
-    const drawZone = (x, y, w, h, color, label, sublabel) => {
-      // Semi-transparent fill
-      ctx.save();
-      ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb', 'rgba');
-      ctx.fillRect(x, y, w, h);
-      ctx.restore();
-      // Dashed border
-      drawDashedRect(x, y, w, h, color);
-      // Labels centred in zone
-      const cx = x + w / 2;
-      const cy = y + h / 2;
+      // Tinted fill
+      ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h); ctx.restore();
+
+      // Border
+      dashedRect(x, y, w, h, color);
+
+      // Zone title
+      const titleSize = Math.max(28, Math.min(54, h / 9));
       ctx.save();
       ctx.fillStyle = color;
-      ctx.font = `700 ${Math.max(24, Math.min(60, h / 6))}px Barlow, Arial, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(label, cx, cy - (sublabel ? Math.max(16, h / 12) : 0));
-      if (sublabel) {
-        ctx.font = `400 ${Math.max(18, Math.min(40, h / 9))}px Barlow, Arial, sans-serif`;
-        ctx.fillText(sublabel, cx, cy + Math.max(16, h / 12));
-      }
+      ctx.font = `700 ${titleSize}px Barlow, Arial, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(title, x + w / 2, y + 28);
       ctx.restore();
+
+      // Data rows
+      const rows = [
+        ['PIXEL SIZE',           `${Math.round(w)} × ${Math.round(h)} px`,    true],
+        ['PHYSICAL SIZE',        `${toM(w, 'x')} × ${toM(h, 'y')}`,          false],
+        ['ASPECT RATIO',         ar,                                            false],
+        ['% OF SCREEN',          `${pctW}% wide  ×  ${pctH}% tall`,           false],
+        ['FROM LEFT / TOP',      `${Math.round(x)} px  /  ${Math.round(y)} px`, false],
+        ['FROM RIGHT / BOTTOM',  `${Math.round(fromRight)} px  /  ${Math.round(fromBottom)} px`, false],
+      ];
+
+      const maxPanelH = h * 0.56;
+      const lineH = Math.min(50, Math.max(28, (maxPanelH - 24) / rows.length));
+      const panelH = rows.length * lineH + 24;
+      const panelY = Math.max(y + titleSize + 48, y + h - panelH - 16);
+      const pad = 40;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.72)';
+      ctx.fillRect(x + 8, panelY, w - 16, panelH);
+      ctx.restore();
+
+      // Accent line across top of panel
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 2;
+      ctx.setLineDash([]); ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(x + 8, panelY); ctx.lineTo(x + w - 8, panelY); ctx.stroke();
+      ctx.restore();
+
+      const valSize = Math.max(18, Math.min(34, lineH * 0.64));
+      const lblSize = Math.max(14, Math.min(24, lineH * 0.46));
+      rows.forEach(([label, val, highlight], i) => {
+        const ry = panelY + 12 + i * lineH + lineH / 2;
+        ctx.save();
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = `400 ${lblSize}px Barlow, Arial, sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.fillText(label, x + pad, ry);
+        ctx.fillStyle = highlight ? color : 'rgba(255,255,255,0.88)';
+        ctx.font = `${highlight ? '700' : '500'} ${valSize}px Barlow, Arial, sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.fillText(val, x + w - pad, ry);
+        ctx.restore();
+      });
     };
 
     const safeName = (pip.name || 'None').replace(/[^a-zA-Z0-9_-]/g, '-');
 
+    // BG border
+    dashedRect(0, 0, TW, TH, '#4da6ff', 4);
+
+    // Header strip
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.78)';
+    ctx.fillRect(0, 0, TW, 76);
+    ctx.fillStyle = '#4da6ff';
+    ctx.font = '600 28px Barlow, Arial, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(`BACKGROUND  —  ${TW} × ${TH} px  ·  ${PHYS_W}m × ${PHYS_H}m  ·  ${aspectRatio(TW, TH)} aspect`, 40, 38);
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = '600 28px Barlow, Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(pip.name.toUpperCase(), TW - 40, 38);
+    ctx.restore();
+
     if (PipPresets.isDual(pip)) {
-      // Blue dashed border + label for full canvas (background zone)
-      drawDashedRect(0, 0, TW, TH, '#4da6ff');
-      drawLabel('BACKGROUND LAYER — FULL SCREEN  |  3456 × 1152px', TW / 2, 18, '#4da6ff', 28);
-      // Green zones for each slot
-      pip.slots.forEach(slot => {
+      pip.slots.forEach((slot, i) => {
         const px = PipPresets.toPixels(slot, TW, TH);
-        drawZone(px.x, px.y, px.w, px.h, '#00d47a', 'FOREGROUND',
-          Math.round(px.w) + '×' + Math.round(px.h) + 'px');
+        drawZone(px.x, px.y, px.w, px.h, '#00d47a', `FOREGROUND — SLOT ${i + 1}`);
       });
     } else if (pip.fg) {
-      // Single FG zone
-      drawDashedRect(0, 0, TW, TH, '#4da6ff');
-      drawLabel('BACKGROUND LAYER — FULL SCREEN  |  3456 × 1152px', TW / 2, 18, '#4da6ff', 28);
       const px = PipPresets.toPixels(pip.fg, TW, TH);
-      drawZone(px.x, px.y, px.w, px.h, '#00d47a', pip.name,
-        Math.round(px.w) + '×' + Math.round(px.h) + 'px');
+      drawZone(px.x, px.y, px.w, px.h, '#00d47a', 'FOREGROUND LAYER');
     } else {
-      // Background only
-      drawDashedRect(0, 0, TW, TH, '#4da6ff');
       ctx.save();
       ctx.fillStyle = '#4da6ff';
-      ctx.font = '700 72px Barlow, Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('BACKGROUND ONLY', TW / 2, TH / 2 - 40);
-      ctx.font = '400 48px Barlow, Arial, sans-serif';
-      ctx.fillText('3456 × 1152px', TW / 2, TH / 2 + 40);
+      ctx.font = '700 80px Barlow, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('BACKGROUND ONLY', TW / 2, TH / 2 - 60);
+      ctx.font = '500 52px Barlow, Arial, sans-serif';
+      ctx.fillText(`${TW} × ${TH} px`, TW / 2, TH / 2 + 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '400 38px Barlow, Arial, sans-serif';
+      ctx.fillText(`${PHYS_W}m × ${PHYS_H}m  ·  ${aspectRatio(TW, TH)} aspect ratio`, TW / 2, TH / 2 + 72);
       ctx.restore();
     }
 
     // Footer
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '400 24px Barlow, Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('FOHP AUSTRALIA · SCREENTEST LAYOUT TEMPLATE · ' + pip.name.toUpperCase(), TW / 2, TH - 12);
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(0, TH - 44, TW, 44);
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.font = '400 22px Barlow, Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(`FOHP AUSTRALIA  ·  SCREENTEST LAYOUT TEMPLATE  ·  ${pip.name.toUpperCase()}  ·  SCREEN: ${TW} × ${TH} px  /  ${PHYS_W}m × ${PHYS_H}m`, TW / 2, TH - 22);
     ctx.restore();
 
     canvas.toBlob(blob => {
