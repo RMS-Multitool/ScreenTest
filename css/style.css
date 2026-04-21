@@ -281,7 +281,7 @@ label { user-select: none; }
 .seg-ctrl { display: flex; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .seg-btn { flex: 1; padding: 5px 8px; background: transparent; color: var(--text-dim); font-size: 11px; font-weight: 500; transition: all 0.15s; border: none; cursor: pointer; }
 .seg-btn:hover { background: var(--bg-hover); color: var(--text); }
-.seg-btn.active { background: var(--bg-active); color: var(--accent); }
+.seg-btn.active { background: var(--accent); color: #fff; }
 
 /* Resolution presets */
 .res-presets { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -296,7 +296,7 @@ label { user-select: none; }
   transition: all 0.15s;
 }
 .res-chip:hover { border-color: var(--accent-dim); color: var(--text); }
-.res-chip.active { border-color: var(--accent); color: var(--accent); background: var(--bg-active); }
+.res-chip.active { border-color: var(--accent); color: #fff; background: var(--accent); }
 
 .custom-res-row { display: flex; align-items: center; gap: 6px; }
 .custom-res-row input { width: 70px; }
@@ -372,9 +372,9 @@ label { user-select: none; }
 }
 .drop-zone-icon { font-size: 20px; margin-bottom: 6px; }
 .drop-zone-formats {
-  margin-top: 5px;
-  font-size: 10px;
-  color: var(--text-faint);
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
   letter-spacing: 0.3px;
 }
 
