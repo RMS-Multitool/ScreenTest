@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <rect width="800" height="450" fill="#0d0d0d"/>
+  <!-- Gradient background glow -->
+  <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" style="stop-color:#330000;stop-opacity:1"/>
+    <stop offset="100%" style="stop-color:#0d0d0d;stop-opacity:1"/>
+  </radialGradient>
+  <rect width="800" height="450" fill="url(#glow)"/>
+  <!-- Live dot -->
+  <circle cx="260" cy="220" r="18" fill="#ff2020"/>
+  <circle cx="260" cy="220" r="28" fill="none" stroke="#ff2020" stroke-width="2" opacity="0.4"/>
+  <!-- LIVE text -->
+  <text x="295" y="232" dominant-baseline="middle" font-family="Arial Black, sans-serif" font-size="64" font-weight="900" fill="#ffffff" letter-spacing="8">LIVE</text>
+  <!-- NOW subtext -->
+  <text x="400" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#ff4444" letter-spacing="16">NOW</text>
+  <!-- Decorative lines -->
+  <line x1="120" y1="340" x2="340" y2="340" stroke="#333" stroke-width="1"/>
+  <line x1="460" y1="340" x2="680" y2="340" stroke="#333" stroke-width="1"/>
+</svg>

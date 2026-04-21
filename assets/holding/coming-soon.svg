@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0c29"/>
+      <stop offset="50%" style="stop-color:#302b63"/>
+      <stop offset="100%" style="stop-color:#24243e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <!-- Grid overlay -->
+  <g stroke="#ffffff" stroke-width="0.5" opacity="0.05">
+    <line x1="0" y1="270" x2="1920" y2="270"/>
+    <line x1="0" y1="540" x2="1920" y2="540"/>
+    <line x1="0" y1="810" x2="1920" y2="810"/>
+    <line x1="480" y1="0" x2="480" y2="1080"/>
+    <line x1="960" y1="0" x2="960" y2="1080"/>
+    <line x1="1440" y1="0" x2="1440" y2="1080"/>
+  </g>
+  <!-- Main text -->
+  <text x="960" y="460" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="120" font-weight="900" fill="#ffffff" letter-spacing="20" opacity="0.95">COMING</text>
+  <text x="960" y="620" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="120" font-weight="900" fill="#ffffff" letter-spacing="20" opacity="0.95">SOON</text>
+  <!-- Decorative bar -->
+  <rect x="760" y="650" width="400" height="4" rx="2" fill="#7b68ee"/>
+  <!-- Subtext -->
+  <text x="960" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#9999cc" letter-spacing="8">STAY TUNED</text>
+</svg>
