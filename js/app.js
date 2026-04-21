@@ -469,6 +469,8 @@ const ScreenTest = (() => {
       ctx.restore();
     };
 
+    const HEADER_H = 76, FOOTER_H = 44;
+
     const drawZone = (x, y, w, h, color, title) => {
       const fromRight  = TW - x - w;
       const fromBottom = TH - y - h;
@@ -483,13 +485,14 @@ const ScreenTest = (() => {
       // Border
       dashedRect(x, y, w, h, color);
 
-      // Zone title — clamp size by both height and width
+      // Zone title — always below the header strip, clamped by zone width
       const titleSize = Math.max(22, Math.min(54, h / 9, w / 11));
+      const titleY = Math.max(y + 28, HEADER_H + 12);
       ctx.save();
       ctx.fillStyle = color;
       ctx.font = `700 ${titleSize}px Barlow, Arial, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText(title, x + w / 2, y + 28, w - 48);
+      ctx.fillText(title, x + w / 2, titleY, w - 48);
       ctx.restore();
 
       // Data rows
@@ -501,26 +504,26 @@ const ScreenTest = (() => {
         ['FROM RIGHT / BOTTOM',  `${Math.round(fromRight)} px  /  ${Math.round(fromBottom)} px`, false],
       ];
 
-      const pad     = Math.min(40, w * 0.055);
-      const innerW  = w - pad * 2;
-      const maxPanelH = h * 0.56;
-      const lineH   = Math.min(50, Math.max(26, (maxPanelH - 24) / rows.length));
-      const panelH  = rows.length * lineH + 24;
-      const panelY  = Math.max(y + titleSize + 48, y + h - panelH - 16);
+      const pad        = Math.min(40, w * 0.055);
+      const innerW     = w - pad * 2;
+      // Panel must stay below the title and above the footer
+      const panelBottom = Math.min(y + h - 8, TH - FOOTER_H - 8);
+      const maxPanelH  = panelBottom - (titleY + titleSize + 20);
+      const lineH      = Math.min(50, Math.max(26, (maxPanelH - 24) / rows.length));
+      const panelH     = rows.length * lineH + 24;
+      const panelY     = panelBottom - panelH;
 
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,0.72)';
       ctx.fillRect(x + 8, panelY, w - 16, panelH);
       ctx.restore();
 
-      // Accent line across top of panel
       ctx.save();
       ctx.strokeStyle = color; ctx.lineWidth = 2;
       ctx.setLineDash([]); ctx.globalAlpha = 0.5;
       ctx.beginPath(); ctx.moveTo(x + 8, panelY); ctx.lineTo(x + w - 8, panelY); ctx.stroke();
       ctx.restore();
 
-      // Font sizes also clamped by zone width
       const valSize = Math.max(14, Math.min(34, lineH * 0.64, w / 16));
       const lblSize = Math.max(11, Math.min(24, lineH * 0.46, w / 22));
       rows.forEach(([label, val, highlight], i) => {
@@ -541,23 +544,7 @@ const ScreenTest = (() => {
 
     const safeName = (pip.name || 'None').replace(/[^a-zA-Z0-9_-]/g, '-');
 
-    // BG border
-    dashedRect(0, 0, TW, TH, '#4da6ff', 4);
-
-    // Header strip
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.78)';
-    ctx.fillRect(0, 0, TW, 76);
-    ctx.fillStyle = '#4da6ff';
-    ctx.font = '600 28px Barlow, Arial, sans-serif';
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(`BACKGROUND  —  ${TW} × ${TH} px  ·  ${PHYS_W}m × ${PHYS_H}m  ·  ${aspectRatio(TW, TH)} aspect`, 40, 38);
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.font = '600 28px Barlow, Arial, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(pip.name.toUpperCase(), TW - 40, 38);
-    ctx.restore();
-
+    // ── Draw zones first, then chrome on top ─────────────────────────
     if (PipPresets.isDual(pip)) {
       pip.slots.forEach((slot, i) => {
         const px = PipPresets.toPixels(slot, TW, TH);
@@ -580,14 +567,31 @@ const ScreenTest = (() => {
       ctx.restore();
     }
 
-    // Footer
+    // BG border — drawn over zones so it's always crisp
+    dashedRect(0, 0, TW, TH, '#4da6ff', 4);
+
+    // Header strip — always on top
+    const headerMid = TW / 2;
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    ctx.fillRect(0, TH - 44, TW, 44);
+    ctx.fillStyle = 'rgba(0,0,0,0.82)';
+    ctx.fillRect(0, 0, TW, HEADER_H);
+    ctx.fillStyle = '#4da6ff';
+    ctx.font = '600 28px Barlow, Arial, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(`BACKGROUND  —  ${TW} × ${TH} px  ·  ${aspectRatio(TW, TH)} aspect`, 40, HEADER_H / 2, headerMid - 80);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.textAlign = 'right';
+    ctx.fillText(pip.name.toUpperCase(), TW - 40, HEADER_H / 2, headerMid - 80);
+    ctx.restore();
+
+    // Footer — always on top
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.82)';
+    ctx.fillRect(0, TH - FOOTER_H, TW, FOOTER_H);
     ctx.fillStyle = 'rgba(255,255,255,0.32)';
     ctx.font = '400 22px Barlow, Arial, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(`FOHP AUSTRALIA  ·  SCREENTEST LAYOUT TEMPLATE  ·  ${pip.name.toUpperCase()}  ·  SCREEN: ${TW} × ${TH} px  /  ${PHYS_W}m × ${PHYS_H}m`, TW / 2, TH - 22);
+    ctx.fillText(`FOHP AUSTRALIA  ·  SCREENTEST LAYOUT TEMPLATE  ·  ${pip.name.toUpperCase()}  ·  SCREEN: ${TW} × ${TH} px  /  ${PHYS_W}m × ${PHYS_H}m`, TW / 2, TH - FOOTER_H / 2, TW - 80);
     ctx.restore();
 
     canvas.toBlob(blob => {
