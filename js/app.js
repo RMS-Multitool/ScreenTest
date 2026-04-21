@@ -34,7 +34,8 @@ const ScreenTest = (() => {
     { id: 'test-pattern', name: 'Test Pattern',         path: './assets/holding/test-pattern.svg' },
     { id: 'align-3456',   name: 'Alignment 3456×1152', path: './assets/holding/alignment-3456.svg' },
     { id: 'align-1920',   name: 'Alignment 1920×1080', path: './assets/holding/alignment-1920.svg' },
-    { id: 'live-now',     name: 'Live Now',             path: './assets/holding/live-now.svg' }
+    { id: 'live-now',        name: 'Live Now',             path: './assets/holding/live-now.svg' },
+    { id: 'welcome-generic', name: 'Welcome — Timber Yard', path: './assets/holding/WELCOME SCREEN - GENERIC - LED.png' }
   ];
 
   const $ = id => document.getElementById(id);
