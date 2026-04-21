@@ -45,7 +45,7 @@
 body {
   background: var(--bg-app);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px;
   line-height: 1.5;
   height: 100vh;
@@ -1019,7 +1019,7 @@ label { user-select: none; }
 
 /* ── Logo in header ──────────────────────────────────────────────── */
 .app-logo-img {
-  height: 32px;
+  height: 44px;
   width: auto;
   object-fit: contain;
   display: block;

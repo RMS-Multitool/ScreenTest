@@ -31,8 +31,10 @@ const ScreenTest = (() => {
   ];
 
   const HOLDINGS = [
-    { id: 'fohp-brand',   name: 'FOHP Brand',          path: './assets/holding/fohp-brand.svg' },
+    { id: 'fohp-brand',   name: 'FOHP Brand',          path: './assets/holding/fohp-logo.svg' },
     { id: 'test-pattern', name: 'Test Pattern',         path: './assets/holding/test-pattern.svg' },
+    { id: 'align-3456',   name: 'Alignment 3456×1152', path: './assets/holding/alignment-3456.svg' },
+    { id: 'align-1920',   name: 'Alignment 1920×1080', path: './assets/holding/alignment-1920.svg' },
     { id: 'sponsor',      name: 'Sponsor Placeholder',  path: './assets/holding/sponsor-placeholder.svg' },
     { id: 'live-now',     name: 'Live Now',             path: './assets/holding/live-now.svg' },
     { id: 'coming-soon',  name: 'Coming Soon',          path: './assets/holding/coming-soon.svg' },

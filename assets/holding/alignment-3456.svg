@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3456 1152" width="3456" height="1152">
+  <defs>
+    <pattern id="g" width="144" height="144" patternUnits="userSpaceOnUse">
+      <rect width="144" height="144" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.75"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="3456" height="1152" fill="#080808"/>
+
+  <!-- Grid -->
+  <rect width="3456" height="1152" fill="url(#g)"/>
+
+  <!-- Centre crosshairs (brighter than grid) -->
+  <line x1="1728" y1="0" x2="1728" y2="1152" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+  <line x1="0"    y1="576" x2="3456" y2="576" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+
+  <!-- Large centre circle -->
+  <circle cx="1728" cy="576" r="520" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+
+  <!-- Corner circles -->
+  <circle cx="170"  cy="170"  r="130" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="3286" cy="170"  r="130" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="170"  cy="982"  r="130" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="3286" cy="982"  r="130" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+
+  <!-- Label -->
+  <text x="1728" y="1130" text-anchor="middle" font-family="monospace" font-size="30" fill="rgba(255,255,255,0.35)">ALIGNMENT — 3456×1152 — 9m × 3m (3:1)</text>
+</svg>

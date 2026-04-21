@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <pattern id="g" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.75"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="#080808"/>
+
+  <!-- Grid -->
+  <rect width="1920" height="1080" fill="url(#g)"/>
+
+  <!-- Centre crosshairs -->
+  <line x1="960" y1="0"    x2="960"  y2="1080" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+  <line x1="0"   y1="540"  x2="1920" y2="540"  stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+
+  <!-- Large centre circle -->
+  <circle cx="960" cy="540" r="475" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+
+  <!-- Corner circles -->
+  <circle cx="150"  cy="150"  r="110" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="1770" cy="150"  r="110" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="150"  cy="930"  r="110" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+  <circle cx="1770" cy="930"  r="110" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+
+  <!-- Label -->
+  <text x="960" y="1055" text-anchor="middle" font-family="monospace" font-size="26" fill="rgba(255,255,255,0.35)">ALIGNMENT — 1920×1080 — PIP / Full HD</text>
+</svg>
