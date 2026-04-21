@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3456 1152" width="3456" height="1152">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000"/>
+      <stop offset="100%" style="stop-color:#0d1a2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="3456" height="1152" fill="url(#bg)"/>
+
+  <!-- Denim accent bars -->
+  <rect x="0" y="0" width="12" height="1152" fill="#1B75BB"/>
+  <rect x="3444" y="0" width="12" height="1152" fill="#1B75BB"/>
+  <rect x="0" y="0" width="3456" height="8" fill="#1B75BB"/>
+  <rect x="0" y="1144" width="3456" height="8" fill="#1B75BB"/>
+
+  <!-- FOHP wordmark -->
+  <text x="1728" y="490" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="280" font-weight="900" fill="#FFFFFF" letter-spacing="40">FOHP</text>
+
+  <!-- Denim underline -->
+  <rect x="728" y="530" width="2000" height="6" rx="3" fill="#1B75BB"/>
+
+  <!-- Sub text -->
+  <text x="1728" y="660" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="72" font-weight="300" fill="#1B75BB" letter-spacing="28">AUSTRALIA</text>
+
+  <text x="1728" y="760" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="40" font-weight="300" fill="#4D4D4D" letter-spacing="14">FRONT OF HOUSE PRODUCTIONS</text>
+</svg>

@@ -1,18 +1,20 @@
 /* ── Variables ─────────────────────────────────────────────────── */
 :root {
-  --bg-app:           #0a0e14;
-  --bg-sidebar:       #111720;
-  --bg-panel:         #161d28;
-  --bg-panel-hd:      #1c2840;
-  --bg-input:         #0d1520;
-  --bg-hover:         #1e2d40;
-  --bg-active:        #0e3060;
-  --bg-card:          #131c28;
+  --bg-app:           #0a0c10;
+  --bg-sidebar:       #0e1218;
+  --bg-panel:         #131820;
+  --bg-panel-hd:      #161e2e;
+  --bg-input:         #0b1018;
+  --bg-hover:         #1a2236;
+  --bg-active:        #0d2248;
+  --bg-card:          #111620;
 
-  --accent:           #00ccff;
-  --accent-dim:       #0088aa;
-  --accent-glow:      rgba(0, 204, 255, 0.18);
-  --col-bg-layer:     #1a80ff;
+  /* FOHP Brand: Denim #1B75BB */
+  --accent:           #1B75BB;
+  --accent-dim:       #1560a0;
+  --accent-hover:     #4991C9;
+  --accent-glow:      rgba(27, 117, 187, 0.22);
+  --col-bg-layer:     #1B75BB;
   --col-fg-layer:     #00d47a;
   --col-fg-glow:      rgba(0, 212, 122, 0.22);
   --col-warning:      #ff8c35;
@@ -20,16 +22,21 @@
   --col-danger-dim:   #8a1122;
   --col-success:      #33ff99;
 
-  --text:             #d8e8f4;
-  --text-dim:         #8098b0;
-  --text-faint:       #4a607a;
-  --border:           #1e2e42;
-  --border-focus:     #0066aa;
+  --text:             #d8e6f2;
+  --text-dim:         #7a92aa;
+  --text-faint:       #3e5472;
+  --border:           #1a2a3e;
+  --border-focus:     #1B75BB;
 
   --sidebar-w:        320px;
   --header-h:         52px;
   --radius:           6px;
   --radius-lg:        10px;
+
+  /* FOHP Palette reference */
+  --fohp-black:       #000000;
+  --fohp-denim:       #1B75BB;
+  --fohp-white:       #FFFFFF;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -72,9 +79,9 @@ label { user-select: none; }
 }
 
 .app-logo-icon {
-  width: 28px;
-  height: 18px;
-  background: linear-gradient(135deg, #003366, #006699);
+  width: 40px;
+  height: 22px;
+  background: linear-gradient(135deg, #0d2248, #1B75BB);
   border: 1px solid var(--accent-dim);
   border-radius: 3px;
   display: flex;
@@ -127,7 +134,7 @@ label { user-select: none; }
   background: var(--accent);
   color: #000;
 }
-.btn-primary:hover { background: #33ddff; }
+.btn-primary:hover { background: var(--accent-hover); }
 
 .btn-secondary {
   background: transparent;

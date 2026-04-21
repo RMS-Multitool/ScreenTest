@@ -31,11 +31,12 @@ const ScreenTest = (() => {
   ];
 
   const HOLDINGS = [
-    { id: 'test-pattern', name: 'Test Pattern',        path: './assets/holding/test-pattern.svg' },
-    { id: 'sponsor',      name: 'Sponsor Placeholder', path: './assets/holding/sponsor-placeholder.svg' },
-    { id: 'live-now',     name: 'Live Now',            path: './assets/holding/live-now.svg' },
-    { id: 'coming-soon',  name: 'Coming Soon',         path: './assets/holding/coming-soon.svg' },
-    { id: 'intermission', name: 'Intermission',        path: './assets/holding/intermission.svg' }
+    { id: 'fohp-brand',   name: 'FOHP Brand',          path: './assets/holding/fohp-brand.svg' },
+    { id: 'test-pattern', name: 'Test Pattern',         path: './assets/holding/test-pattern.svg' },
+    { id: 'sponsor',      name: 'Sponsor Placeholder',  path: './assets/holding/sponsor-placeholder.svg' },
+    { id: 'live-now',     name: 'Live Now',             path: './assets/holding/live-now.svg' },
+    { id: 'coming-soon',  name: 'Coming Soon',          path: './assets/holding/coming-soon.svg' },
+    { id: 'intermission', name: 'Intermission',         path: './assets/holding/intermission.svg' }
   ];
 
   const $ = id => document.getElementById(id);
