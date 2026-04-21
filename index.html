@@ -11,9 +11,9 @@
   <!-- ── Header ──────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="app-logo">
-      <div class="app-logo-icon">FOHP</div>
+      <img src="./assets/fohp-logo.svg" class="app-logo-img" alt="FOHP Australia">
+      <div class="app-logo-divider"></div>
       <div class="app-logo-text">Screen<span>Test</span></div>
-      <span class="app-logo-sub">Front of House Productions</span>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" id="btn-screenshot">📷 Screenshot</button>
@@ -275,6 +275,19 @@
           <div class="pbi-item"><span class="pbi-label">Height</span><span class="pbi-val" id="pbi-h">50%</span><span class="pbi-phys" id="pbi-hm">1.50m</span></div>
           <div class="pbi-item"><span class="pbi-label">From Left</span><span class="pbi-val" id="pbi-l">25%</span><span class="pbi-phys" id="pbi-lm">2.25m</span></div>
           <div class="pbi-item"><span class="pbi-label">From Top</span><span class="pbi-val" id="pbi-t">25%</span><span class="pbi-phys" id="pbi-tm">0.75m</span></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Content Resolution (locks aspect ratio)</div>
+          <div class="pip-ratio-row">
+            <input id="pip-res-w" class="input" type="number" placeholder="1920" min="1" max="9999">
+            <span class="pip-ratio-x">×</span>
+            <input id="pip-res-h" class="input" type="number" placeholder="1080" min="1" max="9999">
+            <label class="pip-lock-label">
+              <input id="pip-lock-ratio" type="checkbox">
+              Lock ratio
+            </label>
+            <span id="pip-ratio-display" class="pip-ratio-display" style="display:none"></span>
+          </div>
         </div>
         <div class="field">
           <div class="field-label">Preset Name</div>

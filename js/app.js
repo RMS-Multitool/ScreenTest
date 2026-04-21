@@ -612,10 +612,37 @@ const ScreenTest = (() => {
   }
 
   function initBuilderEvents() {
-    const screen = $('pip-builder-screen');
-    const box    = $('pip-builder-box');
-    const MIN    = 4;
-    const clamp  = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const screen  = $('pip-builder-screen');
+    const box     = $('pip-builder-box');
+    const resW    = $('pip-res-w');
+    const resH    = $('pip-res-h');
+    const lockChk = $('pip-lock-ratio');
+    const ratioLbl= $('pip-ratio-display');
+    const MIN     = 2;
+    const clamp   = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    // Ratio helpers — ratio is stored in pixel space (w÷h of the content)
+    // In %-of-screen space: hPct = wPct * (screenW/screenH) / pixelRatio
+    const toH = (wPct) => wPct * (VENUE.w / VENUE.h) / builder.ratio;
+    const toW = (hPct) => hPct * builder.ratio / (VENUE.w / VENUE.h);
+
+    function updateRatioLabel() {
+      const rw = parseInt(resW.value), rh = parseInt(resH.value);
+      if (rw > 0 && rh > 0) {
+        builder.ratio = rw / rh;
+        const g = (a, b) => b ? g(b, a % b) : a;
+        const d = g(rw, rh);
+        ratioLbl.textContent = (rw/d) + ':' + (rh/d);
+        ratioLbl.style.display = '';
+      } else {
+        builder.ratio = null;
+        ratioLbl.style.display = 'none';
+      }
+    }
+
+    resW.addEventListener('input', updateRatioLabel);
+    resH.addEventListener('input', updateRatioLabel);
+    lockChk.addEventListener('change', () => { builder.lockRatio = lockChk.checked; });
 
     box.addEventListener('mousedown', e => {
       if (e.target.dataset.h) return;
@@ -632,21 +659,61 @@ const ScreenTest = (() => {
 
     document.addEventListener('mousemove', e => {
       if (!builder.drag) return;
-      const rect = screen.getBoundingClientRect();
-      const dx = (e.clientX - builder.drag.sx) / rect.width  * 100;
-      const dy = (e.clientY - builder.drag.sy) / rect.height * 100;
-      const sf = builder.drag.sf;
+      const rect   = screen.getBoundingClientRect();
+      const dx     = (e.clientX - builder.drag.sx) / rect.width  * 100;
+      const dy     = (e.clientY - builder.drag.sy) / rect.height * 100;
+      const sf     = builder.drag.sf;
+      const locked = builder.lockRatio && builder.ratio;
       let { left, top, w, h } = sf;
+
+      // Constrain a width to its locked-ratio height, clamped to available space
+      const fitW = (nw, maxW, maxH, anchorTop) => {
+        nw = clamp(nw, MIN, maxW);
+        if (!locked) return { w: nw, h: null };
+        let nh = toH(nw);
+        if (nh > maxH) { nh = maxH; nw = toW(nh); nw = clamp(nw, MIN, maxW); nh = toH(nw); }
+        return { w: nw, h: Math.max(MIN, nh) };
+      };
+      const fitH = (nh, maxH, maxW) => {
+        nh = clamp(nh, MIN, maxH);
+        if (!locked) return { h: nh, w: null };
+        let nw = toW(nh);
+        if (nw > maxW) { nw = maxW; nh = toH(nw); nh = clamp(nh, MIN, maxH); }
+        return { h: Math.max(MIN, nh), w: nw };
+      };
+
       switch (builder.drag.mode) {
-        case 'move': left = clamp(sf.left+dx, 0, 100-sf.w);  top = clamp(sf.top+dy, 0, 100-sf.h); break;
-        case 'se':   w = clamp(sf.w+dx, MIN, 100-sf.left);   h = clamp(sf.h+dy, MIN, 100-sf.top); break;
-        case 's':    h = clamp(sf.h+dy, MIN, 100-sf.top); break;
-        case 'e':    w = clamp(sf.w+dx, MIN, 100-sf.left); break;
-        case 'sw':   { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; h=clamp(sf.h+dy,MIN,100-sf.top); } break;
-        case 'ne':   { w=clamp(sf.w+dx,MIN,100-sf.left); const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
-        case 'nw':   { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
-        case 'n':    { const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
-        case 'w':    { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; } break;
+        case 'move':
+          left = clamp(sf.left+dx, 0, 100-sf.w);
+          top  = clamp(sf.top+dy,  0, 100-sf.h);
+          break;
+        case 'se': {
+          const r = fitW(sf.w+dx, 100-sf.left, 100-sf.top);
+          w = r.w; if (locked) h = r.h; else h = clamp(sf.h+dy, MIN, 100-sf.top);
+          break;
+        }
+        case 'sw': {
+          const r = fitW(sf.w-dx, sf.left+sf.w, 100-sf.top);
+          left = sf.left+sf.w-r.w; w = r.w;
+          if (locked) h = r.h; else h = clamp(sf.h+dy, MIN, 100-sf.top);
+          break;
+        }
+        case 'ne': {
+          const r = fitW(sf.w+dx, 100-sf.left, sf.top+sf.h);
+          w = r.w;
+          if (locked) { h = r.h; top = sf.top+sf.h-h; } else { const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=rh.h; top=sf.top+sf.h-h; }
+          break;
+        }
+        case 'nw': {
+          const r = fitW(sf.w-dx, sf.left+sf.w, sf.top+sf.h);
+          left = sf.left+sf.w-r.w; w = r.w;
+          if (locked) { h = r.h; top = sf.top+sf.h-h; } else { const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=rh.h; top=sf.top+sf.h-h; }
+          break;
+        }
+        case 'e':  { const r=fitW(sf.w+dx,100-sf.left,100-sf.top); w=r.w; if(locked)h=r.h; break; }
+        case 'w':  { const r=fitW(sf.w-dx,sf.left+sf.w,100-sf.top); left=sf.left+sf.w-r.w; w=r.w; if(locked)h=r.h; break; }
+        case 's':  { const r=fitH(sf.h+dy,100-sf.top,100-sf.left); h=r.h; if(locked)w=r.w; break; }
+        case 'n':  { const r=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=r.h; top=sf.top+sf.h-h; if(locked)w=r.w; break; }
       }
       builder.fg = { left, top, w, h };
       updateBuilderBox();

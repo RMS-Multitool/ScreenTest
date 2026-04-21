@@ -1016,3 +1016,50 @@ label { user-select: none; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Logo in header ──────────────────────────────────────────────── */
+.app-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.app-logo-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── PIP Builder ratio lock ──────────────────────────────────────── */
+.pip-ratio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pip-ratio-row .input { width: 76px; flex-shrink: 0; }
+.pip-ratio-x { color: var(--text-dim); font-size: 13px; }
+.pip-lock-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  margin-left: 4px;
+  user-select: none;
+}
+.pip-lock-label input { accent-color: var(--accent); cursor: pointer; }
+.pip-ratio-display {
+  font-size: 10px;
+  background: var(--bg-active);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: var(--accent);
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
