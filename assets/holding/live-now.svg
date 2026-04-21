@@ -1,19 +1,118 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
-  <rect width="800" height="450" fill="#0d0d0d"/>
-  <!-- Gradient background glow -->
-  <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-    <stop offset="0%" style="stop-color:#330000;stop-opacity:1"/>
-    <stop offset="100%" style="stop-color:#0d0d0d;stop-opacity:1"/>
+  <defs>
+    <!-- Vignette -->
+    <radialGradient id="ln-vig" cx="50%" cy="50%" r="72%">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.72"/>
+    </radialGradient>
+    <!-- Scanline pattern -->
+    <pattern id="ln-scan" x="0" y="0" width="800" height="2" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="800" height="1" fill="#000" opacity="0.18"/>
+    </pattern>
+    <!-- Noise grain -->
+    <filter id="ln-grain" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
+      <feBlend in="SourceGraphic" in2="grey" mode="soft-light" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <!-- Red LIVE glow -->
+    <filter id="ln-glow-red" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Green glow for timecode -->
+    <filter id="ln-glow-grn" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="800" height="450" fill="#0a0b0c"/>
+
+  <!-- Subtle cold-blue ambient -->
+  <radialGradient id="ln-amb" cx="50%" cy="40%" r="55%">
+    <stop offset="0%" stop-color="#0d1a2a" stop-opacity="1"/>
+    <stop offset="100%" stop-color="#0a0b0c" stop-opacity="1"/>
   </radialGradient>
-  <rect width="800" height="450" fill="url(#glow)"/>
-  <!-- Live dot -->
-  <circle cx="260" cy="220" r="18" fill="#ff2020"/>
-  <circle cx="260" cy="220" r="28" fill="none" stroke="#ff2020" stroke-width="2" opacity="0.4"/>
-  <!-- LIVE text -->
-  <text x="295" y="232" dominant-baseline="middle" font-family="Arial Black, sans-serif" font-size="64" font-weight="900" fill="#ffffff" letter-spacing="8">LIVE</text>
-  <!-- NOW subtext -->
-  <text x="400" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#ff4444" letter-spacing="16">NOW</text>
-  <!-- Decorative lines -->
-  <line x1="120" y1="340" x2="340" y2="340" stroke="#333" stroke-width="1"/>
-  <line x1="460" y1="340" x2="680" y2="340" stroke="#333" stroke-width="1"/>
+  <rect width="800" height="450" fill="url(#ln-amb)"/>
+
+  <!-- Rule-of-thirds grid -->
+  <g stroke="#fff" stroke-width="0.6" opacity="0.09">
+    <line x1="267" y1="0" x2="267" y2="450"/>
+    <line x1="533" y1="0" x2="533" y2="450"/>
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+  </g>
+
+  <!-- Safe-area guide (90% of frame) -->
+  <rect x="40" y="22.5" width="720" height="405" fill="none" stroke="#fff" stroke-width="0.5" stroke-dasharray="4 6" opacity="0.13"/>
+
+  <!-- Corner viewfinder brackets -->
+  <g stroke="#fff" stroke-width="1.8" fill="none" opacity="0.65" stroke-linecap="square">
+    <!-- TL -->
+    <path d="M 52 52 L 52 86 M 52 52 L 86 52"/>
+    <!-- TR -->
+    <path d="M 748 52 L 748 86 M 748 52 L 714 52"/>
+    <!-- BL -->
+    <path d="M 52 398 L 52 364 M 52 398 L 86 398"/>
+    <!-- BR -->
+    <path d="M 748 398 L 748 364 M 748 398 L 714 398"/>
+  </g>
+
+  <!-- Centre focus crosshair + circle -->
+  <g stroke="#fff" opacity="0.55">
+    <line x1="388" y1="225" x2="404" y2="225" stroke-width="1"/>
+    <line x1="400" y1="213" x2="400" y2="237" stroke-width="1"/>
+    <circle cx="400" cy="225" r="30" fill="none" stroke-width="0.75" opacity="0.4"/>
+    <circle cx="400" cy="225" r="6" fill="none" stroke-width="1" opacity="0.7"/>
+  </g>
+
+  <!-- Focus-peaking box hints (rule-of-thirds intersects) -->
+  <g fill="none" stroke="#e84040" stroke-width="0.8" opacity="0.35">
+    <rect x="245" y="128" width="44" height="44" rx="1"/>
+    <rect x="511" y="128" width="44" height="44" rx="1"/>
+  </g>
+
+  <!-- ── Top HUD ── -->
+  <!-- LIVE badge -->
+  <rect x="52" y="56" width="78" height="26" rx="3" fill="#cc0000" filter="url(#ln-glow-red)"/>
+  <circle cx="68" cy="69" r="5.5" fill="#ff5a5a"/>
+  <text x="80" y="69" font-family="Arial Black, Arial, sans-serif" font-size="14" font-weight="900" fill="#fff" dominant-baseline="middle" letter-spacing="2">LIVE</text>
+
+  <!-- CAM label -->
+  <text x="140" y="69" font-family="Arial Narrow, Arial, sans-serif" font-size="13" fill="#7a8a9a" dominant-baseline="middle">CAM 1</text>
+
+  <!-- White balance / exposure -->
+  <text x="400" y="60" text-anchor="middle" font-family="Courier New, monospace" font-size="11" fill="#5a6a7a" opacity="0.8">AWB  ƒ/2.8  1/50  ISO 1600</text>
+
+  <!-- Timecode top-right -->
+  <text x="748" y="58" text-anchor="end" font-family="Courier New, monospace" font-size="13" fill="#00e676" filter="url(#ln-glow-grn)" opacity="0.9">00:00:00:00</text>
+  <!-- Resolution -->
+  <text x="748" y="76" text-anchor="end" font-family="Courier New, monospace" font-size="11" fill="#4a6a5a" opacity="0.8">1920×1080 · 25p</text>
+
+  <!-- ── Bottom info bar ── -->
+  <rect x="0" y="400" width="800" height="50" fill="#000" opacity="0.55"/>
+
+  <!-- Bottom-left: source -->
+  <text x="52" y="425" font-family="Arial Narrow, Arial, sans-serif" font-size="11" fill="#5a6a7a" dominant-baseline="middle" letter-spacing="1">PROGRAM OUT</text>
+
+  <!-- Bottom-centre: LIVE NOW -->
+  <text x="400" y="420" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="18" font-weight="900" fill="#fff" dominant-baseline="middle" letter-spacing="8" opacity="0.95">LIVE NOW</text>
+
+  <!-- Bottom-right: signal -->
+  <circle cx="728" cy="425" r="4" fill="#00e676" filter="url(#ln-glow-grn)" opacity="0.9"/>
+  <text x="738" y="425" font-family="Arial Narrow, Arial, sans-serif" font-size="11" fill="#4a8a6a" dominant-baseline="middle">SDI IN</text>
+
+  <!-- Horizontal level guide (centre line faint) -->
+  <line x1="340" y1="225" x2="370" y2="225" stroke="#fff" stroke-width="0.5" opacity="0.2"/>
+  <line x1="430" y1="225" x2="460" y2="225" stroke="#fff" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Grain overlay -->
+  <rect width="800" height="450" fill="url(#ln-scan)"/>
+  <rect width="800" height="450" fill="#0a0b0c" filter="url(#ln-grain)" opacity="0.07"/>
+
+  <!-- Vignette -->
+  <rect width="800" height="450" fill="url(#ln-vig)"/>
 </svg>
