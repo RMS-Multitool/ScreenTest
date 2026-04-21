@@ -14,7 +14,16 @@ const ScreenTest = (() => {
   };
 
   const blobUrls = { bg: null, fg: null };
-  let library = [];
+  let library     = [];
+  let customPips  = [];
+  let brandAssets = [];
+  const builder   = { fg: { left: 25, top: 25, w: 50, h: 50 }, drag: null };
+
+  function getPipById(id) {
+    const builtin = PipPresets.PRESETS.find(p => p.id === id);
+    if (builtin) return builtin;
+    return customPips.find(p => p.id === id) || PipPresets.PRESETS[0];
+  }
 
   const RES_PRESETS = [
     { label: 'Full Screen — 3456×1152', w: 3456, h: 1152, venue: true },
@@ -65,11 +74,14 @@ const ScreenTest = (() => {
     try { await ScreenTestDB.open(); } catch (e) { toast('Media library unavailable in this browser', 'error'); }
 
     await loadState();
+    await loadCustomPips();
     renderResPresets();
     renderPipGrid();
     renderHoldingGrids();
     await refreshLibrary();
+    await loadBrandAssets();
     applyStateToUI();
+    initBuilderEvents();
 
     const ro = new ResizeObserver(updatePreviewSize);
     ro.observe(el.previewWrapper);
@@ -163,6 +175,7 @@ const ScreenTest = (() => {
       wrap.appendChild(grid);
       el.pipGroups.appendChild(wrap);
     });
+    renderCustomPipGroup();
   }
 
   function selectPip(id) {
@@ -174,7 +187,7 @@ const ScreenTest = (() => {
   }
 
   function updatePipLayout() {
-    const pip = PipPresets.byId(state.pip);
+    const pip = getPipById(state.pip);
     const style = PipPresets.toStyle(pip.fg);
     if (!style) { el.layerFg.style.display = 'none'; return; }
     el.layerFg.style.display = '';
@@ -184,7 +197,7 @@ const ScreenTest = (() => {
   }
 
   function updateMetaPip() {
-    el.metaPip.textContent = PipPresets.byId(state.pip).name;
+    el.metaPip.textContent = getPipById(state.pip).name;
   }
 
   // ── Holding images ───────────────────────────────────────────────
@@ -370,7 +383,7 @@ const ScreenTest = (() => {
     const bgMedia = el.layerBg.querySelector('img, video');
     if (bgMedia) drawFitted(ctx, bgMedia, 0, 0, state.screenW, state.screenH, state.bgFit);
 
-    const pip = PipPresets.byId(state.pip);
+    const pip = getPipById(state.pip);
     if (pip.fg && el.layerFg.style.display !== 'none') {
       const fgMedia = el.layerFg.querySelector('img, video');
       if (fgMedia) {
@@ -412,7 +425,7 @@ const ScreenTest = (() => {
     el.fsScreen.innerHTML = '';
     const bgDiv = document.createElement('div'); bgDiv.className = 'layer layer-bg';
     const fgDiv = document.createElement('div'); fgDiv.className = 'layer layer-fg';
-    const ps = PipPresets.toStyle(PipPresets.byId(state.pip).fg);
+    const ps = PipPresets.toStyle(getPipById(state.pip).fg);
     if (!ps) { fgDiv.style.display = 'none'; }
     else { Object.assign(fgDiv.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps); }
     cloneLayer(el.layerBg, bgDiv, state.bgFit, 100);
@@ -445,6 +458,7 @@ const ScreenTest = (() => {
 
     bindDropZone($('bg-drop-zone'), 'bg');
     bindDropZone($('fg-drop-zone'), 'fg');
+    bindBrandDropZone($('brand-drop-zone'));
 
     $('btn-clear-bg').onclick = () => clearLayer('bg');
     $('btn-clear-fg').onclick = () => clearLayer('fg');
@@ -509,6 +523,214 @@ const ScreenTest = (() => {
   function fmtSize(b) {
     if (!b) return '';
     return b < 1048576 ? Math.round(b / 1024) + 'KB' : (b / 1048576).toFixed(1) + 'MB';
+  }
+
+  // ── Custom PIPs ──────────────────────────────────────────────────
+  async function loadCustomPips() {
+    customPips = await ScreenTestDB.getSetting('customPips', []);
+  }
+
+  function saveCustomPips() {
+    ScreenTestDB.saveSetting('customPips', customPips).catch(() => {});
+  }
+
+  function renderCustomPipGroup() {
+    const existing = el.pipGroups.querySelector('.pip-group-custom');
+    if (existing) existing.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'pip-group pip-group-custom';
+    wrap.innerHTML = '<div class="pip-group-label">Custom Presets</div>';
+    const grid = document.createElement('div');
+    grid.className = 'pip-grid';
+
+    customPips.forEach(pip => {
+      const card = document.createElement('div');
+      card.className = 'pip-card' + (pip.id === state.pip ? ' active' : '');
+      card.dataset.pip = pip.id;
+      card.title = pip.name;
+      card.style.position = 'relative';
+      card.innerHTML = `<div class="pip-thumb">${PipPresets.thumbnail(pip)}</div><div class="pip-name">${pip.name}</div>`;
+      card.onclick = () => selectPip(pip.id);
+      const del = document.createElement('button');
+      del.className = 'pip-card-del'; del.title = 'Delete preset'; del.textContent = '✕';
+      del.onclick = e => { e.stopPropagation(); deleteCustomPip(pip.id); };
+      card.appendChild(del);
+      grid.appendChild(card);
+    });
+
+    const addCard = document.createElement('div');
+    addCard.className = 'pip-card pip-add-card';
+    addCard.title = 'Create a custom PIP preset';
+    addCard.innerHTML = `
+      <div class="pip-thumb" style="position:relative;padding-bottom:56.25%">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent)">+</div>
+      </div>
+      <div class="pip-name">Add New</div>`;
+    addCard.onclick = () => openPipBuilder();
+    grid.appendChild(addCard);
+
+    wrap.appendChild(grid);
+    el.pipGroups.appendChild(wrap);
+  }
+
+  function deleteCustomPip(id) {
+    if (state.pip === id) selectPip('none');
+    customPips = customPips.filter(p => p.id !== id);
+    saveCustomPips();
+    renderCustomPipGroup();
+    toast('Preset deleted', 'success');
+  }
+
+  // ── PIP Builder ──────────────────────────────────────────────────
+  function openPipBuilder() {
+    builder.fg = { left: 25, top: 25, w: 50, h: 50 };
+    $('pip-builder-name').value = '';
+    $('pip-builder-modal').classList.add('active');
+    updateBuilderBox();
+  }
+
+  function closePipBuilder() {
+    $('pip-builder-modal').classList.remove('active');
+    builder.drag = null;
+  }
+
+  function updateBuilderBox() {
+    const { left, top, w, h } = builder.fg;
+    const box = $('pip-builder-box');
+    box.style.left = left + '%'; box.style.top  = top  + '%';
+    box.style.width = w   + '%'; box.style.height = h  + '%';
+    $('pbi-w').textContent  = Math.round(w)    + '%';
+    $('pbi-h').textContent  = Math.round(h)    + '%';
+    $('pbi-l').textContent  = Math.round(left) + '%';
+    $('pbi-t').textContent  = Math.round(top)  + '%';
+    $('pbi-wm').textContent = (w    / 100 * VENUE.physW).toFixed(2) + 'm';
+    $('pbi-hm').textContent = (h    / 100 * VENUE.physH).toFixed(2) + 'm';
+    $('pbi-lm').textContent = (left / 100 * VENUE.physW).toFixed(2) + 'm';
+    $('pbi-tm').textContent = (top  / 100 * VENUE.physH).toFixed(2) + 'm';
+  }
+
+  function initBuilderEvents() {
+    const screen = $('pip-builder-screen');
+    const box    = $('pip-builder-box');
+    const MIN    = 4;
+    const clamp  = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    box.addEventListener('mousedown', e => {
+      if (e.target.dataset.h) return;
+      e.preventDefault();
+      builder.drag = { mode: 'move', sx: e.clientX, sy: e.clientY, sf: { ...builder.fg } };
+    });
+
+    box.querySelectorAll('.pip-handle').forEach(h => {
+      h.addEventListener('mousedown', e => {
+        e.preventDefault(); e.stopPropagation();
+        builder.drag = { mode: e.target.dataset.h, sx: e.clientX, sy: e.clientY, sf: { ...builder.fg } };
+      });
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!builder.drag) return;
+      const rect = screen.getBoundingClientRect();
+      const dx = (e.clientX - builder.drag.sx) / rect.width  * 100;
+      const dy = (e.clientY - builder.drag.sy) / rect.height * 100;
+      const sf = builder.drag.sf;
+      let { left, top, w, h } = sf;
+      switch (builder.drag.mode) {
+        case 'move': left = clamp(sf.left+dx, 0, 100-sf.w);  top = clamp(sf.top+dy, 0, 100-sf.h); break;
+        case 'se':   w = clamp(sf.w+dx, MIN, 100-sf.left);   h = clamp(sf.h+dy, MIN, 100-sf.top); break;
+        case 's':    h = clamp(sf.h+dy, MIN, 100-sf.top); break;
+        case 'e':    w = clamp(sf.w+dx, MIN, 100-sf.left); break;
+        case 'sw':   { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; h=clamp(sf.h+dy,MIN,100-sf.top); } break;
+        case 'ne':   { w=clamp(sf.w+dx,MIN,100-sf.left); const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
+        case 'nw':   { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
+        case 'n':    { const nh=clamp(sf.h-dy,MIN,sf.top+sf.h); top=sf.top+sf.h-nh; h=nh; } break;
+        case 'w':    { const nw=clamp(sf.w-dx,MIN,sf.left+sf.w); left=sf.left+sf.w-nw; w=nw; } break;
+      }
+      builder.fg = { left, top, w, h };
+      updateBuilderBox();
+    });
+
+    document.addEventListener('mouseup', () => { builder.drag = null; });
+
+    $('pip-builder-save').onclick = () => {
+      const name = $('pip-builder-name').value.trim();
+      if (!name) { toast('Please enter a preset name', 'error'); $('pip-builder-name').focus(); return; }
+      const pip = {
+        id: 'custom_' + Date.now(),
+        name,
+        group: 'Custom',
+        fg: { left: Math.round(builder.fg.left), top: Math.round(builder.fg.top), w: Math.round(builder.fg.w), h: Math.round(builder.fg.h) }
+      };
+      customPips.push(pip);
+      saveCustomPips();
+      renderCustomPipGroup();
+      closePipBuilder();
+      toast('Preset saved: ' + name, 'success');
+    };
+
+    $('pip-builder-cancel').onclick = closePipBuilder;
+    $('pip-builder-close').onclick  = closePipBuilder;
+    $('pip-builder-modal').addEventListener('click', e => { if (e.target === $('pip-builder-modal')) closePipBuilder(); });
+  }
+
+  // ── Brand Assets ─────────────────────────────────────────────────
+  async function loadBrandAssets() {
+    const all = await ScreenTestDB.listMedia().catch(() => []);
+    brandAssets = all.filter(x => x.meta && x.meta.brand);
+    renderBrandGrid();
+  }
+
+  function renderBrandGrid() {
+    const grid = $('brand-grid');
+    grid.innerHTML = '';
+    if (!brandAssets.length) {
+      grid.innerHTML = '<div class="library-empty">No brand assets yet.<br>Upload your logo above.</div>';
+      return;
+    }
+    brandAssets.forEach(item => {
+      const url = URL.createObjectURL(item.blob);
+      const card = document.createElement('div');
+      card.className = 'brand-card';
+      card.innerHTML = `
+        <img src="${url}" alt="${item.meta.name}">
+        <div class="brand-card-overlay">
+          <button class="lib-btn lib-btn-bg">Set as BG</button>
+          <button class="lib-btn lib-btn-fg">Set as FG</button>
+          <button class="lib-btn lib-btn-del">Remove</button>
+        </div>
+        <div class="brand-card-name">${item.meta.name}</div>`;
+      card.querySelector('.lib-btn-bg').onclick  = () => setLayerSource('bg', 'library', item.id);
+      card.querySelector('.lib-btn-fg').onclick  = () => setLayerSource('fg', 'library', item.id);
+      card.querySelector('.lib-btn-del').onclick = async () => {
+        await ScreenTestDB.deleteMedia(item.id);
+        loadBrandAssets();
+        refreshLibrary();
+        toast('Brand asset removed', 'success');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function bindBrandDropZone(zone) {
+    zone.onclick = () => {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*';
+      inp.onchange = () => handleBrandUpload(inp.files[0]);
+      inp.click();
+    };
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop',      e => { e.preventDefault(); zone.classList.remove('drag-over'); handleBrandUpload(e.dataTransfer.files[0]); });
+  }
+
+  function handleBrandUpload(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Brand assets must be image files', 'error'); return; }
+    const id = 'brand_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    ScreenTestDB.saveMedia(id, file, { name: file.name, type: file.type, size: file.size, brand: true })
+      .then(() => { toast('Brand asset saved: ' + file.name, 'success'); loadBrandAssets(); refreshLibrary(); })
+      .catch(e => toast('Save failed: ' + e.message, 'error'));
   }
 
   return { init };

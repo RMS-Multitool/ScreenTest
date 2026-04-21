@@ -147,6 +147,21 @@
         </div>
       </section>
 
+      <!-- Brand Assets -->
+      <section class="panel" id="panel-brand">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot" style="background:#ff8c35;box-shadow:0 0 5px rgba(255,140,53,.4)"></span> Brand Assets</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div id="brand-drop-zone" class="drop-zone">
+            <div class="drop-zone-icon">🏷</div>
+            Upload logo / brand image
+          </div>
+          <div id="brand-grid" class="brand-grid"></div>
+        </div>
+      </section>
+
       <!-- Media Library -->
       <section class="panel" id="panel-library">
         <div class="panel-header">
@@ -231,6 +246,47 @@
 
   <!-- ── Toast container ──────────────────────────────────────── -->
   <div id="toast-container"></div>
+
+  <!-- PIP Builder Modal -->
+  <div id="pip-builder-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span>Custom PIP Builder</span>
+        <button id="pip-builder-close" class="btn btn-ghost btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">Drag the green box to position · Drag corners or edges to resize</p>
+        <div id="pip-builder-screen" class="pip-builder-screen">
+          <div class="pip-builder-bg-hint">9m × 3m — Your Venue Screen</div>
+          <div id="pip-builder-box" class="pip-builder-box" style="left:25%;top:25%;width:50%;height:50%">
+            <div class="pip-builder-box-label">FG</div>
+            <div class="pip-handle" data-h="nw"></div>
+            <div class="pip-handle" data-h="n"></div>
+            <div class="pip-handle" data-h="ne"></div>
+            <div class="pip-handle" data-h="w"></div>
+            <div class="pip-handle" data-h="e"></div>
+            <div class="pip-handle" data-h="sw"></div>
+            <div class="pip-handle" data-h="s"></div>
+            <div class="pip-handle" data-h="se"></div>
+          </div>
+        </div>
+        <div id="pip-builder-info" class="pip-builder-info">
+          <div class="pbi-item"><span class="pbi-label">Width</span><span class="pbi-val" id="pbi-w">50%</span><span class="pbi-phys" id="pbi-wm">4.50m</span></div>
+          <div class="pbi-item"><span class="pbi-label">Height</span><span class="pbi-val" id="pbi-h">50%</span><span class="pbi-phys" id="pbi-hm">1.50m</span></div>
+          <div class="pbi-item"><span class="pbi-label">From Left</span><span class="pbi-val" id="pbi-l">25%</span><span class="pbi-phys" id="pbi-lm">2.25m</span></div>
+          <div class="pbi-item"><span class="pbi-label">From Top</span><span class="pbi-val" id="pbi-t">25%</span><span class="pbi-phys" id="pbi-tm">0.75m</span></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Preset Name</div>
+          <input id="pip-builder-name" class="input" type="text" placeholder="e.g. Sponsor Lower Right" maxlength="40">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="pip-builder-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="pip-builder-save" class="btn btn-primary">Save Preset</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/storage.js"></script>
   <script src="js/pips.js"></script>
