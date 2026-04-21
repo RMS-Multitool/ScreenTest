@@ -483,29 +483,30 @@ const ScreenTest = (() => {
       // Border
       dashedRect(x, y, w, h, color);
 
-      // Zone title
-      const titleSize = Math.max(28, Math.min(54, h / 9));
+      // Zone title — clamp size by both height and width
+      const titleSize = Math.max(22, Math.min(54, h / 9, w / 11));
       ctx.save();
       ctx.fillStyle = color;
       ctx.font = `700 ${titleSize}px Barlow, Arial, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText(title, x + w / 2, y + 28);
+      ctx.fillText(title, x + w / 2, y + 28, w - 48);
       ctx.restore();
 
       // Data rows
       const rows = [
-        ['PIXEL SIZE',           `${Math.round(w)} × ${Math.round(h)} px`,    true],
-        ['ASPECT RATIO',         ar,                                            false],
-        ['% OF SCREEN',          `${pctW}% wide  ×  ${pctH}% tall`,           false],
+        ['PIXEL SIZE',           `${Math.round(w)} × ${Math.round(h)} px`,      true],
+        ['ASPECT RATIO',         ar,                                              false],
+        ['% OF SCREEN',          `${pctW}% wide  ×  ${pctH}% tall`,             false],
         ['FROM LEFT / TOP',      `${Math.round(x)} px  /  ${Math.round(y)} px`, false],
         ['FROM RIGHT / BOTTOM',  `${Math.round(fromRight)} px  /  ${Math.round(fromBottom)} px`, false],
       ];
 
+      const pad     = Math.min(40, w * 0.055);
+      const innerW  = w - pad * 2;
       const maxPanelH = h * 0.56;
-      const lineH = Math.min(50, Math.max(28, (maxPanelH - 24) / rows.length));
-      const panelH = rows.length * lineH + 24;
-      const panelY = Math.max(y + titleSize + 48, y + h - panelH - 16);
-      const pad = 40;
+      const lineH   = Math.min(50, Math.max(26, (maxPanelH - 24) / rows.length));
+      const panelH  = rows.length * lineH + 24;
+      const panelY  = Math.max(y + titleSize + 48, y + h - panelH - 16);
 
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,0.72)';
@@ -519,8 +520,9 @@ const ScreenTest = (() => {
       ctx.beginPath(); ctx.moveTo(x + 8, panelY); ctx.lineTo(x + w - 8, panelY); ctx.stroke();
       ctx.restore();
 
-      const valSize = Math.max(18, Math.min(34, lineH * 0.64));
-      const lblSize = Math.max(14, Math.min(24, lineH * 0.46));
+      // Font sizes also clamped by zone width
+      const valSize = Math.max(14, Math.min(34, lineH * 0.64, w / 16));
+      const lblSize = Math.max(11, Math.min(24, lineH * 0.46, w / 22));
       rows.forEach(([label, val, highlight], i) => {
         const ry = panelY + 12 + i * lineH + lineH / 2;
         ctx.save();
@@ -528,11 +530,11 @@ const ScreenTest = (() => {
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.font = `400 ${lblSize}px Barlow, Arial, sans-serif`;
         ctx.textAlign = 'left';
-        ctx.fillText(label, x + pad, ry);
+        ctx.fillText(label, x + pad, ry, innerW * 0.44);
         ctx.fillStyle = highlight ? color : 'rgba(255,255,255,0.88)';
         ctx.font = `${highlight ? '700' : '500'} ${valSize}px Barlow, Arial, sans-serif`;
         ctx.textAlign = 'right';
-        ctx.fillText(val, x + w - pad, ry);
+        ctx.fillText(val, x + w - pad, ry, innerW * 0.54);
         ctx.restore();
       });
     };
