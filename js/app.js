@@ -836,7 +836,12 @@ const ScreenTest = (() => {
 
   // ── PIP Builder ──────────────────────────────────────────────────
   function openPipBuilder() {
-    builder.fg = { left: 25, top: 25, w: 50, h: 50 };
+    builder.fg         = { left: 5,  top: 10, w: 40, h: 80 };
+    builder.fg2        = { left: 55, top: 10, w: 40, h: 80 };
+    builder.isDual     = false;
+    builder.activeSlot = 1;
+    $('pip-dual-toggle').checked = false;
+    $('pip-builder-box2').style.display = 'none';
     $('pip-builder-name').value = '';
     $('pip-builder-modal').classList.add('active');
     updateBuilderBox();
@@ -848,10 +853,20 @@ const ScreenTest = (() => {
   }
 
   function updateBuilderBox() {
-    const { left, top, w, h } = builder.fg;
-    const box = $('pip-builder-box');
-    box.style.left = left + '%'; box.style.top  = top  + '%';
-    box.style.width = w   + '%'; box.style.height = h  + '%';
+    const b1 = builder.fg;
+    const box1 = $('pip-builder-box');
+    box1.style.left = b1.left + '%'; box1.style.top    = b1.top  + '%';
+    box1.style.width = b1.w  + '%'; box1.style.height  = b1.h   + '%';
+
+    if (builder.isDual) {
+      const b2 = builder.fg2;
+      const box2 = $('pip-builder-box2');
+      box2.style.left = b2.left + '%'; box2.style.top   = b2.top + '%';
+      box2.style.width = b2.w  + '%'; box2.style.height = b2.h  + '%';
+    }
+
+    const info = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
+    const { left, top, w, h } = info;
     $('pbi-w').textContent  = Math.round(w)    + '%';
     $('pbi-h').textContent  = Math.round(h)    + '%';
     $('pbi-l').textContent  = Math.round(left) + '%';
@@ -880,14 +895,16 @@ const ScreenTest = (() => {
     function applyRatioToBox() {
       if (!builder.ratio) return;
       const screenAspect = VENUE.w / VENUE.h;
-      let { left, top, w } = builder.fg;
+      const src = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
+      let { left, top, w } = src;
       let newH = w * screenAspect / builder.ratio;
       if (newH > 100 - top) {
         newH = 100 - top;
         w = clamp(newH * builder.ratio / screenAspect, MIN, 100 - left);
         newH = w * screenAspect / builder.ratio;
       }
-      builder.fg = { left, top, w, h: Math.max(MIN, newH) };
+      const result = { left, top, w, h: Math.max(MIN, newH) };
+      if (builder.activeSlot === 2) builder.fg2 = result; else builder.fg = result;
       updateBuilderBox();
     }
 
@@ -910,18 +927,32 @@ const ScreenTest = (() => {
     resH.addEventListener('input', updateRatioLabel);
     lockChk.addEventListener('change', () => { builder.lockRatio = lockChk.checked; });
 
-    box.addEventListener('mousedown', e => {
-      if (e.target.dataset.h) return;
-      e.preventDefault();
-      builder.drag = { mode: 'move', sx: e.clientX, sy: e.clientY, sf: { ...builder.fg } };
+    $('pip-dual-toggle').addEventListener('change', e => {
+      builder.isDual = e.target.checked;
+      $('pip-builder-box2').style.display = builder.isDual ? '' : 'none';
+      if (builder.isDual) builder.activeSlot = 1;
+      updateBuilderBox();
     });
 
-    box.querySelectorAll('.pip-handle').forEach(h => {
-      h.addEventListener('mousedown', e => {
-        e.preventDefault(); e.stopPropagation();
-        builder.drag = { mode: e.target.dataset.h, sx: e.clientX, sy: e.clientY, sf: { ...builder.fg } };
+    function setupBoxDrag(boxEl, slot) {
+      boxEl.addEventListener('mousedown', e => {
+        if (e.target.dataset.h) return;
+        e.preventDefault();
+        builder.activeSlot = slot;
+        const fg = slot === 2 ? builder.fg2 : builder.fg;
+        builder.drag = { slot, mode: 'move', sx: e.clientX, sy: e.clientY, sf: { ...fg } };
       });
-    });
+      boxEl.querySelectorAll('.pip-handle').forEach(h => {
+        h.addEventListener('mousedown', e => {
+          e.preventDefault(); e.stopPropagation();
+          builder.activeSlot = slot;
+          const fg = slot === 2 ? builder.fg2 : builder.fg;
+          builder.drag = { slot, mode: e.target.dataset.h, sx: e.clientX, sy: e.clientY, sf: { ...fg } };
+        });
+      });
+    }
+    setupBoxDrag($('pip-builder-box'),  1);
+    setupBoxDrag($('pip-builder-box2'), 2);
 
     document.addEventListener('mousemove', e => {
       if (!builder.drag) return;
@@ -932,8 +963,7 @@ const ScreenTest = (() => {
       const locked = builder.lockRatio && builder.ratio;
       let { left, top, w, h } = sf;
 
-      // Constrain a width to its locked-ratio height, clamped to available space
-      const fitW = (nw, maxW, maxH, anchorTop) => {
+      const fitW = (nw, maxW, maxH) => {
         nw = clamp(nw, MIN, maxW);
         if (!locked) return { w: nw, h: null };
         let nh = toH(nw);
@@ -953,35 +983,17 @@ const ScreenTest = (() => {
           left = clamp(sf.left+dx, 0, 100-sf.w);
           top  = clamp(sf.top+dy,  0, 100-sf.h);
           break;
-        case 'se': {
-          const r = fitW(sf.w+dx, 100-sf.left, 100-sf.top);
-          w = r.w; if (locked) h = r.h; else h = clamp(sf.h+dy, MIN, 100-sf.top);
-          break;
-        }
-        case 'sw': {
-          const r = fitW(sf.w-dx, sf.left+sf.w, 100-sf.top);
-          left = sf.left+sf.w-r.w; w = r.w;
-          if (locked) h = r.h; else h = clamp(sf.h+dy, MIN, 100-sf.top);
-          break;
-        }
-        case 'ne': {
-          const r = fitW(sf.w+dx, 100-sf.left, sf.top+sf.h);
-          w = r.w;
-          if (locked) { h = r.h; top = sf.top+sf.h-h; } else { const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=rh.h; top=sf.top+sf.h-h; }
-          break;
-        }
-        case 'nw': {
-          const r = fitW(sf.w-dx, sf.left+sf.w, sf.top+sf.h);
-          left = sf.left+sf.w-r.w; w = r.w;
-          if (locked) { h = r.h; top = sf.top+sf.h-h; } else { const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=rh.h; top=sf.top+sf.h-h; }
-          break;
-        }
+        case 'se': { const r=fitW(sf.w+dx,100-sf.left,100-sf.top); w=r.w; if(locked)h=r.h; else h=clamp(sf.h+dy,MIN,100-sf.top); break; }
+        case 'sw': { const r=fitW(sf.w-dx,sf.left+sf.w,100-sf.top); left=sf.left+sf.w-r.w; w=r.w; if(locked)h=r.h; else h=clamp(sf.h+dy,MIN,100-sf.top); break; }
+        case 'ne': { const r=fitW(sf.w+dx,100-sf.left,sf.top+sf.h); w=r.w; if(locked){h=r.h;top=sf.top+sf.h-h;}else{const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left);h=rh.h;top=sf.top+sf.h-h;} break; }
+        case 'nw': { const r=fitW(sf.w-dx,sf.left+sf.w,sf.top+sf.h); left=sf.left+sf.w-r.w; w=r.w; if(locked){h=r.h;top=sf.top+sf.h-h;}else{const rh=fitH(sf.h-dy,sf.top+sf.h,100-sf.left);h=rh.h;top=sf.top+sf.h-h;} break; }
         case 'e':  { const r=fitW(sf.w+dx,100-sf.left,100-sf.top); w=r.w; if(locked)h=r.h; break; }
         case 'w':  { const r=fitW(sf.w-dx,sf.left+sf.w,100-sf.top); left=sf.left+sf.w-r.w; w=r.w; if(locked)h=r.h; break; }
         case 's':  { const r=fitH(sf.h+dy,100-sf.top,100-sf.left); h=r.h; if(locked)w=r.w; break; }
         case 'n':  { const r=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=r.h; top=sf.top+sf.h-h; if(locked)w=r.w; break; }
       }
-      builder.fg = { left, top, w, h };
+      const result = { left, top, w, h };
+      if (builder.drag.slot === 2) builder.fg2 = result; else builder.fg = result;
       updateBuilderBox();
     });
 
@@ -990,11 +1002,14 @@ const ScreenTest = (() => {
     $('pip-builder-save').onclick = () => {
       const name = $('pip-builder-name').value.trim();
       if (!name) { toast('Please enter a preset name', 'error'); $('pip-builder-name').focus(); return; }
+      const round = fg => ({ left: Math.round(fg.left), top: Math.round(fg.top), w: Math.round(fg.w), h: Math.round(fg.h) });
       const pip = {
         id: 'custom_' + Date.now(),
         name,
         group: 'Custom',
-        fg: { left: Math.round(builder.fg.left), top: Math.round(builder.fg.top), w: Math.round(builder.fg.w), h: Math.round(builder.fg.h) }
+        ...(builder.isDual
+          ? { slots: [round(builder.fg), round(builder.fg2)] }
+          : { fg: round(builder.fg) })
       };
       customPips.push(pip);
       saveCustomPips();

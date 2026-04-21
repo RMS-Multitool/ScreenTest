@@ -279,8 +279,19 @@
             <line x1="147" y1="50" x2="153" y2="50" class="guide-cross"/>
             <line x1="150" y1="47" x2="150" y2="53" class="guide-cross"/>
           </svg>
-          <div id="pip-builder-box" class="pip-builder-box" style="left:25%;top:25%;width:50%;height:50%">
-            <div class="pip-builder-box-label">FG</div>
+          <div id="pip-builder-box" class="pip-builder-box" style="left:5%;top:10%;width:40%;height:80%">
+            <div class="pip-builder-box-label">1</div>
+            <div class="pip-handle" data-h="nw"></div>
+            <div class="pip-handle" data-h="n"></div>
+            <div class="pip-handle" data-h="ne"></div>
+            <div class="pip-handle" data-h="w"></div>
+            <div class="pip-handle" data-h="e"></div>
+            <div class="pip-handle" data-h="sw"></div>
+            <div class="pip-handle" data-h="s"></div>
+            <div class="pip-handle" data-h="se"></div>
+          </div>
+          <div id="pip-builder-box2" class="pip-builder-box pip-builder-box-slot2" style="left:55%;top:10%;width:40%;height:80%;display:none">
+            <div class="pip-builder-box-label">2</div>
             <div class="pip-handle" data-h="nw"></div>
             <div class="pip-handle" data-h="n"></div>
             <div class="pip-handle" data-h="ne"></div>
@@ -291,6 +302,10 @@
             <div class="pip-handle" data-h="se"></div>
           </div>
         </div>
+        <label class="pip-dual-toggle-row">
+          <input id="pip-dual-toggle" type="checkbox">
+          <span>Add second PIP slot</span>
+        </label>
         <div id="pip-builder-info" class="pip-builder-info">
           <div class="pbi-item"><span class="pbi-label">Width</span><span class="pbi-val" id="pbi-w">50%</span><span class="pbi-phys" id="pbi-wm">4.50m</span></div>
           <div class="pbi-item"><span class="pbi-label">Height</span><span class="pbi-val" id="pbi-h">50%</span><span class="pbi-phys" id="pbi-hm">1.50m</span></div>

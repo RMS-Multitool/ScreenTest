@@ -946,6 +946,24 @@ label { user-select: none; }
   letter-spacing: 1px;
 }
 
+.pip-builder-box-slot2 {
+  background: rgba(240,176,0,0.18);
+  border-color: #f0b000;
+}
+.pip-builder-box-slot2 .pip-builder-box-label { color: #f0b000; }
+.pip-builder-box-slot2 .pip-handle { border-color: #f0b000; background: #f0b000; }
+
+.pip-dual-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  color: var(--text-dim);
+  user-select: none;
+}
+
 .pip-handle {
   position: absolute;
   width: 10px; height: 10px;
