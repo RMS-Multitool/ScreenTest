@@ -180,12 +180,38 @@ const ScreenTest = (() => {
   }
 
   function selectPip(id) {
-    state.pip = id;
-    document.querySelectorAll('.pip-card').forEach(c => c.classList.toggle('active', c.dataset.pip === id));
-    updatePipLayout();
-    syncFg2();
-    updateMetaPip();
-    saveState();
+    const FADE = 220;
+    const wasVisible = el.layerFg.style.display !== 'none';
+
+    const doApply = () => {
+      state.pip = id;
+      document.querySelectorAll('.pip-card').forEach(c =>
+        c.classList.toggle('active', c.dataset.pip === id));
+      updatePipLayout();
+      syncFg2();
+      updateMetaPip();
+      saveState();
+    };
+
+    const fadeIn = () => {
+      requestAnimationFrame(() => {
+        if (el.layerFg.style.display  !== 'none') el.layerFg.style.opacity  = '';
+        if (el.layerFg2.style.display !== 'none') el.layerFg2.style.opacity = '';
+      });
+    };
+
+    if (wasVisible) {
+      // Fade out, then reposition instantly, then fade in
+      el.layerFg.style.opacity  = '0';
+      el.layerFg2.style.opacity = '0';
+      setTimeout(() => { doApply(); fadeIn(); }, FADE);
+    } else {
+      // Not visible — set to transparent, apply new position, then fade in
+      el.layerFg.style.opacity  = '0';
+      el.layerFg2.style.opacity = '0';
+      doApply();
+      requestAnimationFrame(() => fadeIn());
+    }
   }
 
   function updatePipLayout() {
