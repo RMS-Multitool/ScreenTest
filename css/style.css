@@ -509,24 +509,30 @@ label { user-select: none; }
 /* ── Media Library ─────────────────────────────────────────────── */
 .library-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
 
 .lib-card {
-  position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   background: #050a10;
-  padding-bottom: 56.25%;
-  cursor: pointer;
   transition: border-color 0.15s;
+  display: flex;
+  flex-direction: column;
 }
 
 .lib-card:hover { border-color: var(--accent-dim); }
-.lib-card.active-bg { border-color: var(--col-bg-layer); }
-.lib-card.active-fg { border-color: var(--col-fg-layer); }
+.lib-card.active-bg { border-color: var(--col-bg-layer); box-shadow: 0 0 0 1px var(--col-bg-layer); }
+.lib-card.active-fg { border-color: var(--col-fg-layer); box-shadow: 0 0 0 1px var(--col-fg-layer); }
+
+.lib-card-thumb {
+  position: relative;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
 
 .lib-card-media {
   position: absolute;
@@ -536,59 +542,53 @@ label { user-select: none; }
   object-fit: cover;
 }
 
-.lib-card-overlay {
+.lib-card-type-badge {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 3px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  background: rgba(0,0,0,0.5);
-}
-.lib-card:hover .lib-card-overlay { opacity: 1; }
-
-.lib-card-type {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.lib-card-actions {
-  display: flex;
-  gap: 3px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.lib-btn {
-  font-size: 9px;
-  padding: 2px 6px;
+  top: 4px; left: 4px;
+  font-size: 9px; font-weight: 700;
+  color: #fff;
+  background: rgba(0,0,0,0.65);
+  padding: 2px 5px;
   border-radius: 3px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
+  z-index: 1;
+  letter-spacing: 0.3px;
 }
-.lib-btn-bg  { background: rgba(26,128,255,0.85); color: #fff; }
-.lib-btn-fg  { background: rgba(0,212,122,0.85); color: #000; }
-.lib-btn-del { background: rgba(200,30,50,0.8); color: #fff; }
 
-.lib-card-name {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.75);
+.lib-card-bar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 6px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lib-card-bar-name {
+  flex: 1;
   font-size: 10px;
-  padding: 3px 6px;
   color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
+
+.lib-btn {
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.1s;
+}
+.lib-btn:hover { opacity: 0.8; }
+.lib-btn-bg  { background: var(--col-bg-layer); color: #fff; }
+.lib-btn-fg  { background: var(--col-fg-layer); color: #000; }
+.lib-btn-del { background: transparent; color: var(--text-faint); font-size: 13px; padding: 1px 4px; line-height: 1; }
+.lib-btn-del:hover { color: var(--col-danger); opacity: 1; }
 
 .library-empty {
   color: var(--text-dim);

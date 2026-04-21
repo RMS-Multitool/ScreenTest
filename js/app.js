@@ -370,25 +370,24 @@ const ScreenTest = (() => {
       const isVideo = item.meta.type && item.meta.type.startsWith('video/');
       const card = document.createElement('div');
       card.className = 'lib-card'; card.dataset.id = item.id;
-      card.innerHTML = `
-        <div class="lib-card-media-wrap" style="position:absolute;inset:0;overflow:hidden"></div>
-        <div class="lib-card-overlay">
-          <span class="lib-card-type">${isVideo ? 'VID' : 'IMG'} · ${fmtSize(item.meta.size)}</span>
-          <div class="lib-card-actions">
-            <button class="lib-btn lib-btn-bg" title="Set as Background">BG</button>
-            <button class="lib-btn lib-btn-fg" title="Set as Foreground">FG</button>
-            <button class="lib-btn lib-btn-del" title="Delete">✕</button>
-          </div>
-        </div>
-        <div class="lib-card-name">${item.meta.name || item.id}</div>`;
 
-      const wrap = card.querySelector('.lib-card-media-wrap');
+      card.innerHTML = `
+        <div class="lib-card-thumb">
+          <span class="lib-card-type-badge">${isVideo ? '▶ VID' : 'IMG'} · ${fmtSize(item.meta.size)}</span>
+        </div>
+        <div class="lib-card-bar">
+          <span class="lib-card-bar-name" title="${item.meta.name || ''}">${item.meta.name || item.id}</span>
+          <button class="lib-btn lib-btn-bg" title="Set as Background">BG</button>
+          <button class="lib-btn lib-btn-fg" title="Set as Foreground">FG</button>
+          <button class="lib-btn lib-btn-del" title="Delete">✕</button>
+        </div>`;
+
       const thumbUrl = URL.createObjectURL(item.blob);
       const thumb = isVideo
         ? Object.assign(document.createElement('video'), { src: thumbUrl, muted: true })
-        : Object.assign(document.createElement('img'), { src: thumbUrl, className: 'lib-card-media' });
-      thumb.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
-      wrap.appendChild(thumb);
+        : Object.assign(document.createElement('img'), { src: thumbUrl });
+      thumb.className = 'lib-card-media';
+      card.querySelector('.lib-card-thumb').appendChild(thumb);
 
       card.querySelector('.lib-btn-bg').onclick  = e => { e.stopPropagation(); setLayerSource('bg', 'library', item.id); };
       card.querySelector('.lib-btn-fg').onclick  = e => { e.stopPropagation(); setLayerSource('fg', 'library', item.id); };
