@@ -1,1 +1,54 @@
-[]
+[
+  {
+    "id": "custom_1776773908860",
+    "name": "C PIP",
+    "group": "Custom",
+    "fg": {
+      "left": 20,
+      "top": 0,
+      "w": 59,
+      "h": 100
+    }
+  },
+  {
+    "id": "custom_1776774857839",
+    "name": "IMAG (Dual PIP)",
+    "group": "Custom",
+    "slots": [
+      {
+        "left": 0,
+        "top": 0,
+        "w": 19,
+        "h": 100
+      },
+      {
+        "left": 81,
+        "top": 0,
+        "w": 19,
+        "h": 100
+      }
+    ]
+  },
+  {
+    "id": "custom_1776775005887",
+    "name": "Left PIP (1920 x 1080)",
+    "group": "Custom",
+    "fg": {
+      "left": 1,
+      "top": 4,
+      "w": 55,
+      "h": 92
+    }
+  },
+  {
+    "id": "custom_1776775560324",
+    "name": "Right PIP (1920 x 1080)",
+    "group": "Custom",
+    "fg": {
+      "left": 44,
+      "top": 4,
+      "w": 55,
+      "h": 92
+    }
+  }
+]
