@@ -495,7 +495,6 @@ const ScreenTest = (() => {
       // Data rows
       const rows = [
         ['PIXEL SIZE',           `${Math.round(w)} × ${Math.round(h)} px`,    true],
-        ['PHYSICAL SIZE',        `${toM(w, 'x')} × ${toM(h, 'y')}`,          false],
         ['ASPECT RATIO',         ar,                                            false],
         ['% OF SCREEN',          `${pctW}% wide  ×  ${pctH}% tall`,           false],
         ['FROM LEFT / TOP',      `${Math.round(x)} px  /  ${Math.round(y)} px`, false],
