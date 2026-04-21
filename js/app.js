@@ -19,7 +19,7 @@ const ScreenTest = (() => {
   let brandAssets = [];
   const builder   = { fg: { left: 25, top: 25, w: 50, h: 50 }, drag: null };
 
-  const ADMIN_CODE = 'fohp2025';
+  const ADMIN_CODE = 'fohp2026';
   let pipAdminUnlocked = sessionStorage.getItem('pip-admin') === '1';
 
   function getPipById(id) {
