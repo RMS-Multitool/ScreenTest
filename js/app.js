@@ -759,7 +759,14 @@ const ScreenTest = (() => {
       card.title = pip.name;
       card.innerHTML = `<div class="pip-thumb">${PipPresets.thumbnail(pip)}</div><div class="pip-name">${pip.name}</div>`;
       card.onclick = () => selectPip(pip.id);
-      // Only locally-created PIPs (not from file) get a delete button
+
+      const edit = document.createElement('button');
+      edit.className = 'pip-card-edit';
+      edit.title = 'Edit preset';
+      edit.textContent = '✎';
+      edit.onclick = (e) => { e.stopPropagation(); openPipBuilderForEdit(pip); };
+      card.appendChild(edit);
+
       if (!pip._fromFile) {
         const del = document.createElement('button');
         del.className = 'pip-card-del';
@@ -840,9 +847,30 @@ const ScreenTest = (() => {
     builder.fg2        = { left: 55, top: 10, w: 40, h: 80 };
     builder.isDual     = false;
     builder.activeSlot = 1;
+    builder.editId     = null;
     $('pip-dual-toggle').checked = false;
     $('pip-builder-box2').style.display = 'none';
     $('pip-builder-name').value = '';
+    $('pip-builder-modal').classList.add('active');
+    updateBuilderBox();
+  }
+
+  function openPipBuilderForEdit(pip) {
+    const dual = PipPresets.isDual(pip);
+    builder.fg         = dual ? { ...pip.slots[0] } : { ...pip.fg };
+    builder.fg2        = dual ? { ...pip.slots[1] } : { left: 55, top: 10, w: 40, h: 80 };
+    builder.isDual     = dual;
+    builder.activeSlot = 1;
+    builder.editId     = pip.id;
+    builder.ratio      = null;
+    builder.lockRatio  = false;
+    $('pip-dual-toggle').checked  = dual;
+    $('pip-builder-box2').style.display = dual ? '' : 'none';
+    $('pip-builder-name').value   = pip.name;
+    $('pip-res-w').value = '';
+    $('pip-res-h').value = '';
+    $('pip-ratio-display').style.display = 'none';
+    $('pip-lock-ratio').checked = false;
     $('pip-builder-modal').classList.add('active');
     updateBuilderBox();
   }
@@ -1003,19 +1031,23 @@ const ScreenTest = (() => {
       const name = $('pip-builder-name').value.trim();
       if (!name) { toast('Please enter a preset name', 'error'); $('pip-builder-name').focus(); return; }
       const round = fg => ({ left: Math.round(fg.left), top: Math.round(fg.top), w: Math.round(fg.w), h: Math.round(fg.h) });
-      const pip = {
-        id: 'custom_' + Date.now(),
-        name,
-        group: 'Custom',
-        ...(builder.isDual
-          ? { slots: [round(builder.fg), round(builder.fg2)] }
-          : { fg: round(builder.fg) })
-      };
-      customPips.push(pip);
+      const layout = builder.isDual
+        ? { slots: [round(builder.fg), round(builder.fg2)] }
+        : { fg: round(builder.fg) };
+      if (builder.editId) {
+        const idx = customPips.findIndex(p => p.id === builder.editId);
+        if (idx !== -1) {
+          const old = customPips[idx];
+          customPips[idx] = { id: old.id, name, group: old.group || 'Custom', ...layout };
+          if (old._fromFile) customPips[idx]._fromFile = true;
+        }
+      } else {
+        customPips.push({ id: 'custom_' + Date.now(), name, group: 'Custom', ...layout });
+      }
       saveCustomPips();
       renderCustomPipGroup();
       closePipBuilder();
-      toast('Preset saved: ' + name, 'success');
+      toast((builder.editId ? 'Preset updated: ' : 'Preset saved: ') + name, 'success');
     };
 
     $('pip-builder-cancel').onclick = closePipBuilder;

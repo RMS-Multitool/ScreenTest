@@ -1025,7 +1025,20 @@ label { user-select: none; }
   align-items: center; justify-content: center;
   z-index: 5; padding: 0; line-height: 1;
 }
-.pip-card:hover .pip-card-del { display: flex; }
+.pip-card-edit {
+  display: none;
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: var(--accent-dim);
+  border: none; border-radius: 2px;
+  font-size: 8px; cursor: pointer;
+  color: #fff;
+  align-items: center; justify-content: center;
+  z-index: 5; padding: 0; line-height: 1;
+}
+.pip-card:hover .pip-card-del,
+.pip-card:hover .pip-card-edit { display: flex; }
 
 /* Export/Import toolbar in Custom Presets */
 .pip-custom-toolbar {
