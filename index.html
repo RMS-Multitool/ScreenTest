@@ -265,6 +265,20 @@
         <p class="modal-hint">Drag the green box to position · Drag corners or edges to resize</p>
         <div id="pip-builder-screen" class="pip-builder-screen">
           <div class="pip-builder-bg-hint">9m × 3m — Your Venue Screen</div>
+          <!-- Guide lines overlay -->
+          <svg class="pip-builder-guides" viewBox="0 0 300 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rule of thirds -->
+            <line x1="100" y1="0" x2="100" y2="100" class="guide-third"/>
+            <line x1="200" y1="0" x2="200" y2="100" class="guide-third"/>
+            <line x1="0" y1="33.33" x2="300" y2="33.33" class="guide-third"/>
+            <line x1="0" y1="66.67" x2="300" y2="66.67" class="guide-third"/>
+            <!-- Centre lines -->
+            <line x1="150" y1="0" x2="150" y2="100" class="guide-center"/>
+            <line x1="0" y1="50" x2="300" y2="50" class="guide-center"/>
+            <!-- Centre crosshair tick marks -->
+            <line x1="147" y1="50" x2="153" y2="50" class="guide-cross"/>
+            <line x1="150" y1="47" x2="150" y2="53" class="guide-cross"/>
+          </svg>
           <div id="pip-builder-box" class="pip-builder-box" style="left:25%;top:25%;width:50%;height:50%">
             <div class="pip-builder-box-label">FG</div>
             <div class="pip-handle" data-h="nw"></div>

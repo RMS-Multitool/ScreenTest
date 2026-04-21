@@ -878,6 +878,31 @@ label { user-select: none; }
   user-select: none;
 }
 
+.pip-builder-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.guide-third {
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+.guide-center {
+  stroke: rgba(255,255,255,0.22);
+  stroke-width: 0.75;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.guide-cross {
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
 .pip-builder-bg-hint {
   position: absolute;
   inset: 0;
