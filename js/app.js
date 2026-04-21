@@ -9,7 +9,6 @@ const ScreenTest = (() => {
     bg: { type: 'none', id: null },
     fg: { type: 'none', id: null },
     bgFit: 'cover', fgFit: 'contain',
-    fgOpacity: 100,
     showSafeArea: false, showPipBorder: true
   };
 
@@ -59,8 +58,6 @@ const ScreenTest = (() => {
     el.fgHoldingGrid   = $('fg-holding-grid');
     el.bgFitCtrl       = $('bg-fit-ctrl');
     el.fgFitCtrl       = $('fg-fit-ctrl');
-    el.fgOpacitySlider = $('fg-opacity');
-    el.fgOpacityVal    = $('fg-opacity-val');
     el.safeAreaToggle  = $('safe-area-toggle');
     el.pipBorderToggle = $('pip-border-toggle');
     el.layerFg2        = $('layer-fg2');
@@ -106,8 +103,6 @@ const ScreenTest = (() => {
       c.classList.toggle('active', +c.dataset.w === state.screenW && +c.dataset.h === state.screenH));
     document.querySelectorAll('.pip-card').forEach(c =>
       c.classList.toggle('active', c.dataset.pip === state.pip));
-    el.fgOpacitySlider.value = state.fgOpacity;
-    el.fgOpacityVal.textContent = state.fgOpacity + '%';
     setActiveSegment(el.bgFitCtrl, state.bgFit);
     setActiveSegment(el.fgFitCtrl, state.fgFit);
     el.safeAreaToggle.checked = state.showSafeArea;
@@ -180,7 +175,7 @@ const ScreenTest = (() => {
   }
 
   function selectPip(id) {
-    const FADE = 220;
+    const FADE = 1000;
     const wasVisible = el.layerFg.style.display !== 'none';
 
     const doApply = () => {
@@ -311,7 +306,6 @@ const ScreenTest = (() => {
         media.src = url;
       }
       media.style.objectFit = fit;
-      if (layer === 'fg') media.style.opacity = state.fgOpacity / 100;
       div.appendChild(media);
       syncFg2();
     }
@@ -328,7 +322,6 @@ const ScreenTest = (() => {
       ? Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true })
       : Object.assign(document.createElement('img'), { src: m.src });
     clone.style.objectFit = state.fgFit;
-    clone.style.opacity   = state.fgOpacity / 100;
     el.layerFg2.appendChild(clone);
   }
 
@@ -570,20 +563,16 @@ const ScreenTest = (() => {
       // Draw both slots with the same foreground media source
       const fgMedia = el.layerFg.querySelector('img, video');
       if (fgMedia) {
-        ctx.save(); ctx.globalAlpha = state.fgOpacity / 100;
         pip.slots.forEach(slot => {
           const px = PipPresets.toPixels(slot, state.screenW, state.screenH);
           drawFitted(ctx, fgMedia, px.x, px.y, px.w, px.h, state.fgFit);
         });
-        ctx.restore();
       }
     } else if (pip.fg && el.layerFg.style.display !== 'none') {
       const fgMedia = el.layerFg.querySelector('img, video');
       if (fgMedia) {
         const px = PipPresets.toPixels(pip.fg, state.screenW, state.screenH);
-        ctx.save(); ctx.globalAlpha = state.fgOpacity / 100;
         drawFitted(ctx, fgMedia, px.x, px.y, px.w, px.h, state.fgFit);
-        ctx.restore();
       }
     }
 
@@ -628,7 +617,7 @@ const ScreenTest = (() => {
         div.className = 'layer layer-fg pip-slot';
         Object.assign(div.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps);
         div.classList.toggle('show-border', state.showPipBorder);
-        cloneLayer(el.layerFg, div, state.fgFit, state.fgOpacity);
+        cloneLayer(el.layerFg, div, state.fgFit);
         el.fsScreen.appendChild(div);
       });
     } else {
@@ -637,18 +626,18 @@ const ScreenTest = (() => {
       if (!ps) { fgDiv.style.display = 'none'; }
       else { Object.assign(fgDiv.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps); }
       fgDiv.classList.toggle('show-border', state.showPipBorder);
-      cloneLayer(el.layerFg, fgDiv, state.fgFit, state.fgOpacity);
+      cloneLayer(el.layerFg, fgDiv, state.fgFit);
       el.fsScreen.appendChild(fgDiv);
     }
   }
 
-  function cloneLayer(src, dest, fit, opacity) {
+  function cloneLayer(src, dest, fit) {
     const m = src.querySelector('img, video');
     if (!m) return;
     const clone = m.tagName === 'VIDEO'
       ? Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true })
       : Object.assign(document.createElement('img'), { src: m.src });
-    clone.style.cssText = `width:100%;height:100%;object-fit:${fit};opacity:${opacity / 100}`;
+    clone.style.cssText = `width:100%;height:100%;object-fit:${fit}`;
     dest.appendChild(clone);
   }
 
@@ -676,16 +665,6 @@ const ScreenTest = (() => {
     });
     el.fgFitCtrl.querySelectorAll('.seg-btn').forEach(b => b.onclick = () => {
       state.fgFit = b.dataset.val; setActiveSegment(el.fgFitCtrl, state.fgFit); updateLayerFit('fg'); saveState();
-    });
-
-    el.fgOpacitySlider.addEventListener('input', () => {
-      state.fgOpacity = +el.fgOpacitySlider.value;
-      el.fgOpacityVal.textContent = state.fgOpacity + '%';
-      const m = el.layerFg.querySelector('img, video');
-      if (m) m.style.opacity = state.fgOpacity / 100;
-      const m2 = el.layerFg2.querySelector('img, video');
-      if (m2) m2.style.opacity = state.fgOpacity / 100;
-      saveState();
     });
 
     el.safeAreaToggle.onchange  = () => { state.showSafeArea  = el.safeAreaToggle.checked;  el.safeOverlay.classList.toggle('hidden', !state.showSafeArea); saveState(); };
