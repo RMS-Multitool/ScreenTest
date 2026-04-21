@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScreenTest — Venue LED Preview</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="app-logo">
+      <div class="app-logo-icon">LED</div>
+      <div class="app-logo-text">Screen<span>Test</span></div>
+      <span class="app-logo-sub">Venue Preview</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="btn-screenshot">📷 Screenshot</button>
+      <button class="btn btn-primary"   id="btn-fullscreen">⛶ Fullscreen</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar ─────────────────────────────────────────────── -->
+    <aside class="sidebar">
+
+      <!-- Screen Config -->
+      <section class="panel" id="panel-screen">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot dot-cfg"></span> Screen Configuration</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <div class="field-label">Resolution Preset</div>
+            <div id="res-presets" class="res-presets"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Custom Resolution</div>
+            <div class="custom-res-row">
+              <input id="custom-w" class="input" type="number" min="100" max="7680" value="1920" placeholder="Width">
+              <span>×</span>
+              <input id="custom-h" class="input" type="number" min="100" max="4320" value="1080" placeholder="Height">
+              <span class="text-muted" style="font-size:10px">px</span>
+            </div>
+          </div>
+          <div class="field-row" style="gap:16px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
+              <input id="safe-area-toggle" type="checkbox"> Safe area
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
+              <input id="pip-border-toggle" type="checkbox" checked> PIP border
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Background Layer -->
+      <section class="panel" id="panel-bg">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot dot-bg"></span> Background Layer</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div id="bg-layer-preview" class="layer-preview">
+            <div class="layer-preview-inner">
+              <div class="layer-empty-hint">No media selected</div>
+            </div>
+            <span class="layer-label label-bg">BG</span>
+          </div>
+          <div class="layer-actions">
+            <div id="bg-drop-zone" class="drop-zone" style="flex:1">
+              <div class="drop-zone-icon">⬆</div>
+              Click or drop image / video
+            </div>
+            <button id="btn-clear-bg" class="btn btn-ghost btn-sm">Clear</button>
+          </div>
+          <div class="field">
+            <div class="field-label">Object Fit</div>
+            <div id="bg-fit-ctrl" class="seg-ctrl">
+              <button class="seg-btn active" data-val="cover">Cover</button>
+              <button class="seg-btn"        data-val="contain">Contain</button>
+              <button class="seg-btn"        data-val="fill">Fill</button>
+            </div>
+          </div>
+          <div class="sub-section" id="sub-bg-holding">
+            <div class="sub-section-hd">
+              Holding Images <span class="chev">▼</span>
+            </div>
+            <div class="sub-section-body">
+              <div id="bg-holding-grid" class="holding-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PIP Layout -->
+      <section class="panel" id="panel-pip">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot dot-pip"></span> PIP / Overlay Layout</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div id="pip-groups" class="pip-groups"></div>
+        </div>
+      </section>
+
+      <!-- Foreground Layer -->
+      <section class="panel" id="panel-fg">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot dot-fg"></span> Foreground / PIP Content</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div id="fg-layer-preview" class="layer-preview">
+            <div class="layer-preview-inner">
+              <div class="layer-empty-hint">No media selected</div>
+            </div>
+            <span class="layer-label label-fg">FG</span>
+          </div>
+          <div class="layer-actions">
+            <div id="fg-drop-zone" class="drop-zone" style="flex:1">
+              <div class="drop-zone-icon">⬆</div>
+              Click or drop image / video
+            </div>
+            <button id="btn-clear-fg" class="btn btn-ghost btn-sm">Clear</button>
+          </div>
+          <div class="field">
+            <div class="field-label">Object Fit</div>
+            <div id="fg-fit-ctrl" class="seg-ctrl">
+              <button class="seg-btn active" data-val="contain">Contain</button>
+              <button class="seg-btn"        data-val="cover">Cover</button>
+              <button class="seg-btn"        data-val="fill">Fill</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">Opacity</div>
+            <div class="range-row">
+              <input id="fg-opacity" type="range" min="0" max="100" value="100">
+              <span id="fg-opacity-val" class="range-val">100%</span>
+            </div>
+          </div>
+          <div class="sub-section" id="sub-fg-holding">
+            <div class="sub-section-hd">
+              Holding Images <span class="chev">▼</span>
+            </div>
+            <div class="sub-section-body">
+              <div id="fg-holding-grid" class="holding-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Media Library -->
+      <section class="panel" id="panel-library">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot dot-lib"></span> Media Library</div>
+          <span class="panel-chevron">▼</span>
+        </div>
+        <div class="panel-body">
+          <div id="library-grid" class="library-grid">
+            <div class="library-empty">No media saved yet.<br>Upload images or videos above.</div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ── Preview Area ─────────────────────────────────────────── -->
+    <main class="preview-area">
+      <div id="preview-wrapper" class="preview-wrapper">
+        <div class="screen-frame">
+          <div class="screen-bezel">
+            <div id="screen-display" class="screen-display">
+
+              <!-- Background layer -->
+              <div id="layer-bg" class="layer layer-bg">
+                <div class="layer-placeholder">
+                  <div class="layer-placeholder-icon">🖥</div>
+                  <div>No Background Media</div>
+                </div>
+              </div>
+
+              <!-- Foreground / PIP layer -->
+              <div id="layer-fg" class="layer layer-fg" style="display:none">
+                <div class="layer-placeholder">
+                  <div class="layer-placeholder-icon">📺</div>
+                  <div>No Foreground Media</div>
+                </div>
+              </div>
+
+              <!-- Safe area guide -->
+              <div id="safe-overlay" class="safe-overlay hidden"></div>
+
+              <!-- Corner registration marks -->
+              <div class="corner-mark tl"></div>
+              <div class="corner-mark tr"></div>
+              <div class="corner-mark bl"></div>
+              <div class="corner-mark br"></div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta bar -->
+      <div class="preview-meta">
+        <div class="meta-chip">
+          <span class="meta-key">Resolution</span>
+          <span id="meta-res" class="meta-val">1920 × 1080</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-key">Scale</span>
+          <span id="meta-scale" class="meta-val accent">100%</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-key">PIP</span>
+          <span id="meta-pip" class="meta-val">Background Only</span>
+        </div>
+        <div class="meta-actions"></div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ── Fullscreen overlay ────────────────────────────────────── -->
+  <div id="fullscreen-overlay" class="fullscreen-overlay">
+    <div id="fs-screen" style="position:relative;width:100vw;height:100vh;overflow:hidden;pointer-events:none"></div>
+    <div class="fullscreen-esc-hint">Click or press ESC to exit</div>
+  </div>
+
+  <!-- ── Toast container ──────────────────────────────────────── -->
+  <div id="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/pips.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
