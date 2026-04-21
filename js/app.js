@@ -13,7 +13,8 @@ const ScreenTest = (() => {
     showSafeArea: false, showPipBorder: true
   };
 
-  const blobUrls = { bg: null, fg: null };
+  const blobUrls  = { bg: null, fg: null };
+  const blobMeta  = { bg: null, fg: null };
   let library     = [];
   let customPips  = [];
   let brandAssets = [];
@@ -234,6 +235,10 @@ const ScreenTest = (() => {
   // ── Layer media ──────────────────────────────────────────────────
   async function setLayerSource(layer, type, id) {
     state[layer] = { type, id };
+    // If FG is being set but pip is currently Background Only, switch to Foreground Full so it's visible
+    if (layer === 'fg' && type !== 'none' && state.pip === 'none') {
+      selectPip('fg-full');
+    }
     await applyLayerMedia(layer);
     updateLayerPreview(layer);
     refreshHoldingActive(layer);
@@ -268,6 +273,7 @@ const ScreenTest = (() => {
       if (!item) return;
       const url = URL.createObjectURL(item.blob);
       blobUrls[layer] = url;
+      blobMeta[layer] = item.meta;
       const isVideo = item.meta.type && item.meta.type.startsWith('video/');
       let media;
       if (isVideo) {
@@ -313,9 +319,8 @@ const ScreenTest = (() => {
       return;
     }
     if (src.type === 'library' && blobUrls[layer]) {
-      const item = library.find(x => x.id === src.id);
-      if (!item) return;
-      const isVideo = item.meta.type && item.meta.type.startsWith('video/');
+      const meta = blobMeta[layer] || (library.find(x => x.id === src.id) || {}).meta || {};
+      const isVideo = meta.type && meta.type.startsWith('video/');
       const m = isVideo ? Object.assign(document.createElement('video'), { src: blobUrls[layer], muted: true, autoplay: true, loop: true, playsInline: true })
                         : Object.assign(document.createElement('img'),   { src: blobUrls[layer] });
       inner.appendChild(m);
@@ -358,6 +363,8 @@ const ScreenTest = (() => {
     try { library = await ScreenTestDB.listMedia(); } catch (e) { library = []; }
     renderLibrary();
     refreshLibraryActive();
+    updateLayerPreview('bg');
+    updateLayerPreview('fg');
   }
 
   function renderLibrary() {
