@@ -19,6 +19,9 @@ const ScreenTest = (() => {
   let brandAssets = [];
   const builder   = { fg: { left: 25, top: 25, w: 50, h: 50 }, drag: null };
 
+  const ADMIN_CODE = 'fohp2025';
+  let pipAdminUnlocked = sessionStorage.getItem('pip-admin') === '1';
+
   function getPipById(id) {
     const builtin = PipPresets.PRESETS.find(p => p.id === id);
     if (builtin) return builtin;
@@ -814,7 +817,36 @@ const ScreenTest = (() => {
 
     const wrap = document.createElement('div');
     wrap.className = 'pip-group pip-group-custom';
-    wrap.innerHTML = '<div class="pip-group-label">Custom Presets</div>';
+
+    // Label + lock toggle
+    const labelEl = document.createElement('div');
+    labelEl.className = 'pip-group-label';
+    labelEl.textContent = 'Custom Presets';
+    const lockBtn = document.createElement('button');
+    lockBtn.className = 'pip-admin-lock-btn';
+    lockBtn.title = pipAdminUnlocked ? 'Lock admin mode' : 'Unlock admin mode';
+    lockBtn.textContent = pipAdminUnlocked ? '🔓' : '🔒';
+    lockBtn.onclick = () => {
+      if (pipAdminUnlocked) {
+        pipAdminUnlocked = false;
+        sessionStorage.removeItem('pip-admin');
+        renderCustomPipGroup();
+      } else {
+        const code = prompt('Enter admin code:');
+        if (code === null) return;
+        if (code === ADMIN_CODE) {
+          pipAdminUnlocked = true;
+          sessionStorage.setItem('pip-admin', '1');
+          renderCustomPipGroup();
+          toast('Admin mode unlocked', 'success');
+        } else {
+          toast('Incorrect code', 'error');
+        }
+      }
+    };
+    labelEl.appendChild(lockBtn);
+    wrap.appendChild(labelEl);
+
     const grid = document.createElement('div');
     grid.className = 'pip-grid';
 
@@ -826,75 +858,78 @@ const ScreenTest = (() => {
       card.innerHTML = `<div class="pip-thumb">${PipPresets.thumbnail(pip)}</div><div class="pip-name">${pip.name}</div>`;
       card.onclick = () => selectPip(pip.id);
 
-      const edit = document.createElement('button');
-      edit.className = 'pip-card-edit';
-      edit.title = 'Edit preset';
-      edit.textContent = '✎';
-      edit.onclick = (e) => { e.stopPropagation(); openPipBuilderForEdit(pip); };
-      card.appendChild(edit);
+      if (pipAdminUnlocked) {
+        const edit = document.createElement('button');
+        edit.className = 'pip-card-edit';
+        edit.title = 'Edit preset';
+        edit.textContent = '✎';
+        edit.onclick = (e) => { e.stopPropagation(); openPipBuilderForEdit(pip); };
+        card.appendChild(edit);
 
-      if (!pip._fromFile) {
-        const del = document.createElement('button');
-        del.className = 'pip-card-del';
-        del.title = 'Delete preset';
-        del.textContent = '×';
-        del.onclick = (e) => { e.stopPropagation(); deleteCustomPip(pip.id); };
-        card.appendChild(del);
+        if (!pip._fromFile) {
+          const del = document.createElement('button');
+          del.className = 'pip-card-del';
+          del.title = 'Delete preset';
+          del.textContent = '×';
+          del.onclick = (e) => { e.stopPropagation(); deleteCustomPip(pip.id); };
+          card.appendChild(del);
+        }
       }
       grid.appendChild(card);
     });
 
     wrap.appendChild(grid);
 
-    // Export / Import toolbar
-    const toolbar = document.createElement('div');
-    toolbar.className = 'pip-custom-toolbar';
+    if (pipAdminUnlocked) {
+      const toolbar = document.createElement('div');
+      toolbar.className = 'pip-custom-toolbar';
 
-    const btnExport = document.createElement('button');
-    btnExport.className = 'btn-secondary';
-    btnExport.textContent = 'Export PIPs';
-    btnExport.onclick = () => {
-      const data = JSON.stringify(customPips.map(({ _fromFile, ...p }) => p), null, 2);
-      const a = document.createElement('a');
-      a.href = 'data:application/json,' + encodeURIComponent(data);
-      a.download = 'custom-pips.json';
-      a.click();
-    };
+      const btnAdd = document.createElement('button');
+      btnAdd.className = 'btn-primary';
+      btnAdd.textContent = '+ New PIP';
+      btnAdd.onclick = openPipBuilder;
 
-    const btnImport = document.createElement('button');
-    btnImport.className = 'btn-secondary';
-    btnImport.textContent = 'Import PIPs';
-    btnImport.onclick = () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json,application/json';
-      input.onchange = async () => {
-        try {
-          const text = await input.files[0].text();
-          const imported = JSON.parse(text);
-          if (!Array.isArray(imported)) throw new Error('Expected array');
-          const existingIds = new Set(customPips.map(p => p.id));
-          const newPips = imported.filter(p => p.id && !existingIds.has(p.id));
-          customPips = [...customPips, ...newPips];
-          saveCustomPips();
-          renderCustomPipGroup();
-          toast(`Imported ${newPips.length} preset(s)`, 'success');
-        } catch (e) {
-          toast('Import failed: invalid JSON file', 'error');
-        }
+      const btnExport = document.createElement('button');
+      btnExport.className = 'btn-secondary';
+      btnExport.textContent = 'Export PIPs';
+      btnExport.onclick = () => {
+        const data = JSON.stringify(customPips.map(({ _fromFile, ...p }) => p), null, 2);
+        const a = document.createElement('a');
+        a.href = 'data:application/json,' + encodeURIComponent(data);
+        a.download = 'custom-pips.json';
+        a.click();
       };
-      input.click();
-    };
 
-    const btnAdd = document.createElement('button');
-    btnAdd.className = 'btn-primary';
-    btnAdd.textContent = '+ New PIP';
-    btnAdd.onclick = openPipBuilder;
+      const btnImport = document.createElement('button');
+      btnImport.className = 'btn-secondary';
+      btnImport.textContent = 'Import PIPs';
+      btnImport.onclick = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,application/json';
+        input.onchange = async () => {
+          try {
+            const text = await input.files[0].text();
+            const imported = JSON.parse(text);
+            if (!Array.isArray(imported)) throw new Error('Expected array');
+            const existingIds = new Set(customPips.map(p => p.id));
+            const newPips = imported.filter(p => p.id && !existingIds.has(p.id));
+            customPips = [...customPips, ...newPips];
+            saveCustomPips();
+            renderCustomPipGroup();
+            toast(`Imported ${newPips.length} preset(s)`, 'success');
+          } catch (e) {
+            toast('Import failed: invalid JSON file', 'error');
+          }
+        };
+        input.click();
+      };
 
-    toolbar.appendChild(btnAdd);
-    toolbar.appendChild(btnExport);
-    toolbar.appendChild(btnImport);
-    wrap.appendChild(toolbar);
+      toolbar.appendChild(btnAdd);
+      toolbar.appendChild(btnExport);
+      toolbar.appendChild(btnImport);
+      wrap.appendChild(toolbar);
+    }
 
     el.pipGroups.appendChild(wrap);
   }

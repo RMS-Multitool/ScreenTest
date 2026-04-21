@@ -449,7 +449,21 @@ label { user-select: none; }
   letter-spacing: 0.6px;
   font-weight: 600;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+.pip-admin-lock-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 1px 3px;
+  opacity: 0.4;
+  line-height: 1;
+  margin-left: auto;
+}
+.pip-admin-lock-btn:hover { opacity: 1; }
 
 .pip-grid {
   display: grid;
