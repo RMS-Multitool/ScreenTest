@@ -62,6 +62,7 @@ const ScreenTest = (() => {
     el.fgOpacityVal    = $('fg-opacity-val');
     el.safeAreaToggle  = $('safe-area-toggle');
     el.pipBorderToggle = $('pip-border-toggle');
+    el.layerFg2        = $('layer-fg2');
     el.fullscreenOverlay = $('fullscreen-overlay');
     el.fsScreen        = $('fs-screen');
     el.resPresets      = $('res-presets');
@@ -187,12 +188,26 @@ const ScreenTest = (() => {
 
   function updatePipLayout() {
     const pip = getPipById(state.pip);
-    const style = PipPresets.toStyle(pip.fg);
-    if (!style) { el.layerFg.style.display = 'none'; return; }
-    el.layerFg.style.display = '';
-    Object.assign(el.layerFg.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto', width: '', height: '' });
-    Object.assign(el.layerFg.style, style);
-    el.layerFg.classList.toggle('show-border', state.showPipBorder);
+    if (PipPresets.isDual(pip)) {
+      // Dual PIP: two slots
+      [el.layerFg, el.layerFg2].forEach((div, i) => {
+        const slot  = pip.slots[i];
+        const style = PipPresets.toStyle(slot);
+        div.style.display = '';
+        Object.assign(div.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto', width: '', height: '' });
+        Object.assign(div.style, style);
+        div.classList.toggle('show-border', state.showPipBorder);
+      });
+    } else {
+      // Hide slot 2 always for non-dual presets
+      el.layerFg2.style.display = 'none';
+      const style = PipPresets.toStyle(pip.fg);
+      if (!style) { el.layerFg.style.display = 'none'; return; }
+      el.layerFg.style.display = '';
+      Object.assign(el.layerFg.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto', width: '', height: '' });
+      Object.assign(el.layerFg.style, style);
+      el.layerFg.classList.toggle('show-border', state.showPipBorder);
+    }
   }
 
   function updateMetaPip() {
@@ -235,6 +250,7 @@ const ScreenTest = (() => {
 
     if (src.type === 'none') {
       div.innerHTML = `<div class="layer-placeholder"><div class="layer-placeholder-icon">${layer === 'bg' ? '🖥' : '📺'}</div><div>No ${layer === 'bg' ? 'Background' : 'Foreground'} Media</div></div>`;
+      syncFg2();
       return;
     }
     if (src.type === 'holding') {
@@ -243,6 +259,7 @@ const ScreenTest = (() => {
       const img = document.createElement('img');
       img.src = h.path; img.style.objectFit = fit;
       div.appendChild(img);
+      syncFg2();
       return;
     }
     if (src.type === 'library') {
@@ -263,7 +280,23 @@ const ScreenTest = (() => {
       media.style.objectFit = fit;
       if (layer === 'fg') media.style.opacity = state.fgOpacity / 100;
       div.appendChild(media);
+      syncFg2();
     }
+  }
+
+  // Mirror the foreground content into slot 2 for dual PIP presets
+  function syncFg2() {
+    const pip = getPipById(state.pip);
+    if (!PipPresets.isDual(pip)) { el.layerFg2.innerHTML = ''; return; }
+    el.layerFg2.innerHTML = '';
+    const m = el.layerFg.querySelector('img, video');
+    if (!m) return;
+    const clone = m.tagName === 'VIDEO'
+      ? Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true })
+      : Object.assign(document.createElement('img'), { src: m.src });
+    clone.style.objectFit = state.fgFit;
+    clone.style.opacity   = state.fgOpacity / 100;
+    el.layerFg2.appendChild(clone);
   }
 
   function updateLayerPreview(layer) {
@@ -293,6 +326,11 @@ const ScreenTest = (() => {
     const fit = layer === 'bg' ? state.bgFit : state.fgFit;
     const m = div.querySelector('img, video');
     if (m) m.style.objectFit = fit;
+    // Keep slot 2 in sync
+    if (layer === 'fg') {
+      const m2 = el.layerFg2.querySelector('img, video');
+      if (m2) m2.style.objectFit = fit;
+    }
   }
 
   function refreshHoldingActive(layer) {
@@ -372,6 +410,32 @@ const ScreenTest = (() => {
     saveState(); toast('Deleted', 'success'); refreshLibrary();
   }
 
+  // ── Export Template ─────────────────────────────────────────────
+  function exportTemplate() {
+    const pip = getPipById(state.pip);
+    const template = {
+      version: 1,
+      screenW: state.screenW,
+      screenH: state.screenH,
+      pip: state.pip,
+      pipDef: PipPresets.isDual(pip)
+        ? { id: pip.id, name: pip.name, group: pip.group, slots: pip.slots }
+        : { id: pip.id, name: pip.name, group: pip.group, fg: pip.fg || null },
+      bgFit: state.bgFit,
+      fgFit: state.fgFit,
+      fgOpacity: state.fgOpacity,
+      showSafeArea: state.showSafeArea,
+      showPipBorder: state.showPipBorder,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `screentest-template-${state.screenW}x${state.screenH}-${Date.now()}.json`;
+    a.click();
+    toast('Template exported!', 'success');
+  }
+
   // ── Screenshot ───────────────────────────────────────────────────
   async function takeScreenshot() {
     const canvas = document.createElement('canvas');
@@ -383,7 +447,18 @@ const ScreenTest = (() => {
     if (bgMedia) drawFitted(ctx, bgMedia, 0, 0, state.screenW, state.screenH, state.bgFit);
 
     const pip = getPipById(state.pip);
-    if (pip.fg && el.layerFg.style.display !== 'none') {
+    if (PipPresets.isDual(pip)) {
+      // Draw both slots with the same foreground media source
+      const fgMedia = el.layerFg.querySelector('img, video');
+      if (fgMedia) {
+        ctx.save(); ctx.globalAlpha = state.fgOpacity / 100;
+        pip.slots.forEach(slot => {
+          const px = PipPresets.toPixels(slot, state.screenW, state.screenH);
+          drawFitted(ctx, fgMedia, px.x, px.y, px.w, px.h, state.fgFit);
+        });
+        ctx.restore();
+      }
+    } else if (pip.fg && el.layerFg.style.display !== 'none') {
       const fgMedia = el.layerFg.querySelector('img, video');
       if (fgMedia) {
         const px = PipPresets.toPixels(pip.fg, state.screenW, state.screenH);
@@ -423,14 +498,29 @@ const ScreenTest = (() => {
     el.fullscreenOverlay.classList.add('active');
     el.fsScreen.innerHTML = '';
     const bgDiv = document.createElement('div'); bgDiv.className = 'layer layer-bg';
-    const fgDiv = document.createElement('div'); fgDiv.className = 'layer layer-fg';
-    const ps = PipPresets.toStyle(getPipById(state.pip).fg);
-    if (!ps) { fgDiv.style.display = 'none'; }
-    else { Object.assign(fgDiv.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps); }
     cloneLayer(el.layerBg, bgDiv, state.bgFit, 100);
-    cloneLayer(el.layerFg, fgDiv, state.fgFit, state.fgOpacity);
     el.fsScreen.appendChild(bgDiv);
-    el.fsScreen.appendChild(fgDiv);
+
+    const pip = getPipById(state.pip);
+    if (PipPresets.isDual(pip)) {
+      pip.slots.forEach((slot, i) => {
+        const ps = PipPresets.toStyle(slot);
+        const div = document.createElement('div');
+        div.className = 'layer layer-fg pip-slot';
+        Object.assign(div.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps);
+        div.classList.toggle('show-border', state.showPipBorder);
+        cloneLayer(el.layerFg, div, state.fgFit, state.fgOpacity);
+        el.fsScreen.appendChild(div);
+      });
+    } else {
+      const fgDiv = document.createElement('div'); fgDiv.className = 'layer layer-fg';
+      const ps = PipPresets.toStyle(pip.fg);
+      if (!ps) { fgDiv.style.display = 'none'; }
+      else { Object.assign(fgDiv.style, { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps); }
+      fgDiv.classList.toggle('show-border', state.showPipBorder);
+      cloneLayer(el.layerFg, fgDiv, state.fgFit, state.fgOpacity);
+      el.fsScreen.appendChild(fgDiv);
+    }
   }
 
   function cloneLayer(src, dest, fit, opacity) {
@@ -474,16 +564,24 @@ const ScreenTest = (() => {
       el.fgOpacityVal.textContent = state.fgOpacity + '%';
       const m = el.layerFg.querySelector('img, video');
       if (m) m.style.opacity = state.fgOpacity / 100;
+      const m2 = el.layerFg2.querySelector('img, video');
+      if (m2) m2.style.opacity = state.fgOpacity / 100;
       saveState();
     });
 
     el.safeAreaToggle.onchange  = () => { state.showSafeArea  = el.safeAreaToggle.checked;  el.safeOverlay.classList.toggle('hidden', !state.showSafeArea); saveState(); };
-    el.pipBorderToggle.onchange = () => { state.showPipBorder = el.pipBorderToggle.checked; el.layerFg.classList.toggle('show-border', state.showPipBorder); saveState(); };
+    el.pipBorderToggle.onchange = () => {
+      state.showPipBorder = el.pipBorderToggle.checked;
+      el.layerFg.classList.toggle('show-border', state.showPipBorder);
+      el.layerFg2.classList.toggle('show-border', state.showPipBorder);
+      saveState();
+    };
 
     const applyRes = () => { const w = +el.customW.value, h = +el.customH.value; if (w > 0 && h > 0) setResolution(w, h); };
     el.customW.addEventListener('change', applyRes);
     el.customH.addEventListener('change', applyRes);
 
+    $('btn-export-template').onclick = exportTemplate;
     $('btn-screenshot').onclick = takeScreenshot;
     $('btn-fullscreen').onclick = openFullscreen;
     el.fullscreenOverlay.onclick = closeFullscreen;

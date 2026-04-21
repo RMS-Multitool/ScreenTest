@@ -32,9 +32,36 @@ const PipPresets = (() => {
     { id: 'pip-med-bl',   name: 'PIP Medium BL',     group: 'PIP Overlays',  fg: { bot: 5,  left: 5,  w: 35,  h: 35  } },
     { id: 'pip-center',   name: 'Center Box 50%',    group: 'PIP Overlays',  fg: { top: 25, left: 25, w: 50,  h: 50  } },
     { id: 'pip-center-sm',name: 'Center Box 33%',    group: 'PIP Overlays',  fg: { top: 33, left: 33, w: 33,  h: 33  } },
+
+    // Dual PIP presets — slots: array of two fg descriptors
+    { id: 'dual-side-side',  name: 'Side by Side',      group: 'Dual PIP',
+      slots: [
+        { top: 0, left: 0,  w: 50, h: 100 },
+        { top: 0, right: 0, w: 50, h: 100 }
+      ] },
+    { id: 'dual-corners',    name: 'Corners (TL/BR)',   group: 'Dual PIP',
+      slots: [
+        { top: 5,  left: 5,  w: 35, h: 35 },
+        { bot: 5,  right: 5, w: 35, h: 35 }
+      ] },
+    { id: 'dual-pip-br-bl',  name: 'PIP BL + BR',       group: 'Dual PIP',
+      slots: [
+        { bot: 5,  left: 5,  w: 28, h: 28 },
+        { bot: 5,  right: 5, w: 28, h: 28 }
+      ] },
+    { id: 'dual-banner-pip', name: 'Lower Banner + PIP', group: 'Dual PIP',
+      slots: [
+        { bot: 0,  left: 0,  w: 100, h: 20 },
+        { top: 5,  right: 5, w: 30,  h: 35 }
+      ] },
   ];
 
-  // Convert a preset's fg descriptor to an absolute CSS style object
+  // Returns true if preset uses dual slots
+  function isDual(pip) {
+    return Array.isArray(pip.slots);
+  }
+
+  // Convert a single fg descriptor to an absolute CSS style object
   function toStyle(fg) {
     if (!fg) return null;
     const s = {
@@ -59,26 +86,39 @@ const PipPresets = (() => {
     return { x, y, w, h };
   }
 
-  // SVG thumbnail (60×34) showing BG area and FG overlay area
+  // SVG thumbnail (60×34) showing BG area and FG overlay area(s)
   function thumbnail(pip) {
     const W = 60, H = 34;
-    const fg = pip.fg;
-    let fgEl = '';
+    let fgEls = '';
     let bgLabel = `<text x="${W/2}" y="${H/2}" text-anchor="middle" dominant-baseline="middle" font-family="monospace" font-size="5.5" fill="#3a6a9a">BG</text>`;
 
-    if (fg) {
-      const px = toPixels(fg, W, H);
+    if (isDual(pip)) {
+      // Dual slots — draw two boxes with distinct colours
+      const colours = [
+        { fill: '#1a6a4a', text: '#5aeeaa', label: '1' },
+        { fill: '#4a3a0a', text: '#eecc44', label: '2' },
+      ];
+      pip.slots.forEach((slot, i) => {
+        const px = toPixels(slot, W, H);
+        const c  = colours[i];
+        const fs = Math.max(3.5, Math.min(6, Math.min(px.w, px.h) / 3));
+        fgEls += `<rect x="${px.x.toFixed(1)}" y="${px.y.toFixed(1)}" width="${px.w.toFixed(1)}" height="${px.h.toFixed(1)}" fill="${c.fill}" rx="1.5"/>
+        <text x="${(px.x + px.w / 2).toFixed(1)}" y="${(px.y + px.h / 2).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-family="monospace" font-size="${fs}" fill="${c.text}">${c.label}</text>`;
+      });
+    } else if (pip.fg) {
+      const fg   = pip.fg;
+      const px   = toPixels(fg, W, H);
       const isFull = (fg.w === 100 && fg.h === 100);
       if (isFull) bgLabel = '';
       const fs = Math.max(3.5, Math.min(6, Math.min(px.w, px.h) / 3));
-      fgEl = `<rect x="${px.x.toFixed(1)}" y="${px.y.toFixed(1)}" width="${px.w.toFixed(1)}" height="${px.h.toFixed(1)}" fill="#1a6a4a" rx="1.5"/>
+      fgEls = `<rect x="${px.x.toFixed(1)}" y="${px.y.toFixed(1)}" width="${px.w.toFixed(1)}" height="${px.h.toFixed(1)}" fill="#1a6a4a" rx="1.5"/>
         <text x="${(px.x + px.w / 2).toFixed(1)}" y="${(px.y + px.h / 2).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-family="monospace" font-size="${fs}" fill="#5aeeaa">FG</text>`;
     }
 
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%">
       <rect width="${W}" height="${H}" fill="#102030" rx="3"/>
       ${bgLabel}
-      ${fgEl}
+      ${fgEls}
     </svg>`;
   }
 
@@ -95,5 +135,5 @@ const PipPresets = (() => {
     return out;
   }
 
-  return { PRESETS, byId, grouped, toStyle, toPixels, thumbnail };
+  return { PRESETS, byId, grouped, toStyle, toPixels, thumbnail, isDual };
 })();

@@ -19,6 +19,7 @@
       <div class="app-logo-text">Screen<span>Test</span></div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-secondary" id="btn-export-template">Export Template</button>
       <button class="btn btn-secondary" id="btn-screenshot">📷 Screenshot</button>
       <button class="btn btn-primary"   id="btn-fullscreen">⛶ Fullscreen</button>
     </div>
@@ -195,13 +196,16 @@
                 </div>
               </div>
 
-              <!-- Foreground / PIP layer -->
+              <!-- Foreground / PIP layer (slot 1) -->
               <div id="layer-fg" class="layer layer-fg" style="display:none">
                 <div class="layer-placeholder">
                   <div class="layer-placeholder-icon">📺</div>
                   <div>No Foreground Media</div>
                 </div>
               </div>
+
+              <!-- Foreground / PIP layer (slot 2 — dual PIP only) -->
+              <div id="layer-fg2" class="layer layer-fg pip-slot" style="display:none"></div>
 
               <!-- Safe area guide -->
               <div id="safe-overlay" class="safe-overlay hidden"></div>
