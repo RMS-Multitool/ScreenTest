@@ -706,10 +706,23 @@ label { user-select: none; }
 .safe-overlay {
   position: absolute;
   inset: 5%;
-  border: 1px dashed rgba(255,255,255,0.08);
+  border: 2px dashed rgba(255, 220, 50, 0.85);
   border-radius: 2px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
   pointer-events: none;
   z-index: 10;
+}
+.safe-overlay::before {
+  content: 'SAFE AREA';
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-size: 9px;
+  font-family: 'Barlow', Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: rgba(255, 220, 50, 0.85);
+  line-height: 1;
 }
 
 .safe-overlay.hidden { display: none; }
