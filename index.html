@@ -29,7 +29,7 @@
       <!-- Screen Config -->
       <section class="panel" id="panel-screen">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot dot-cfg"></span> Screen Configuration</div>
+          <div class="panel-title"><span class="dot dot-cfg"></span> Screen — 9m × 3m Venue LED</div>
           <span class="panel-chevron">▼</span>
         </div>
         <div class="panel-body">
@@ -40,9 +40,9 @@
           <div class="field">
             <div class="field-label">Custom Resolution</div>
             <div class="custom-res-row">
-              <input id="custom-w" class="input" type="number" min="100" max="7680" value="1920" placeholder="Width">
+              <input id="custom-w" class="input" type="number" min="100" max="7680" value="3456" placeholder="Width">
               <span>×</span>
-              <input id="custom-h" class="input" type="number" min="100" max="4320" value="1080" placeholder="Height">
+              <input id="custom-h" class="input" type="number" min="100" max="4320" value="1152" placeholder="Height">
               <span class="text-muted" style="font-size:10px">px</span>
             </div>
           </div>
@@ -209,7 +209,11 @@
       <div class="preview-meta">
         <div class="meta-chip">
           <span class="meta-key">Resolution</span>
-          <span id="meta-res" class="meta-val">1920 × 1080</span>
+          <span id="meta-res" class="meta-val">3456 × 1152</span>
+        </div>
+        <div class="meta-chip" id="meta-phys-chip">
+          <span class="meta-key">Physical Size</span>
+          <span id="meta-phys" class="meta-val">9m × 3m (3:1)</span>
         </div>
         <div class="meta-chip">
           <span class="meta-key">Scale</span>

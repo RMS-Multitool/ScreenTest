@@ -1,20 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
-  <!-- Color bars -->
-  <rect x="0" y="0" width="274" height="720" fill="#c0c0c0"/>
-  <rect x="274" y="0" width="274" height="720" fill="#c0c000"/>
-  <rect x="548" y="0" width="274" height="720" fill="#00c0c0"/>
-  <rect x="822" y="0" width="274" height="720" fill="#00c000"/>
-  <rect x="1096" y="0" width="274" height="720" fill="#c000c0"/>
-  <rect x="1370" y="0" width="274" height="720" fill="#c00000"/>
-  <rect x="1644" y="0" width="276" height="720" fill="#0000c0"/>
-  <!-- Lower section -->
-  <rect x="0" y="720" width="1920" height="120" fill="#00008b"/>
-  <rect x="0" y="840" width="1920" height="120" fill="#ffffff"/>
-  <rect x="0" y="960" width="1920" height="120" fill="#000000"/>
-  <!-- Center crosshair -->
-  <line x1="960" y1="440" x2="960" y2="640" stroke="white" stroke-width="2" opacity="0.5"/>
-  <line x1="860" y1="540" x2="1060" y2="540" stroke="white" stroke-width="2" opacity="0.5"/>
-  <circle cx="960" cy="540" r="60" fill="none" stroke="white" stroke-width="2" opacity="0.5"/>
-  <!-- Labels -->
-  <text x="960" y="1040" text-anchor="middle" font-family="monospace" font-size="32" fill="#888">SMPTE COLOR BARS — 1920×1080</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3456 1152" width="3456" height="1152">
+  <!-- 7 colour bars across full width, top 75% height -->
+  <rect x="0"    y="0" width="494" height="864" fill="#c0c0c0"/>
+  <rect x="494"  y="0" width="494" height="864" fill="#c0c000"/>
+  <rect x="988"  y="0" width="494" height="864" fill="#00c0c0"/>
+  <rect x="1482" y="0" width="494" height="864" fill="#00c000"/>
+  <rect x="1976" y="0" width="494" height="864" fill="#c000c0"/>
+  <rect x="2470" y="0" width="494" height="864" fill="#c00000"/>
+  <rect x="2964" y="0" width="492" height="864" fill="#0000c0"/>
+  <!-- Lower strips -->
+  <rect x="0" y="864"  width="3456" height="96"  fill="#00008b"/>
+  <rect x="0" y="960"  width="3456" height="96"  fill="#ffffff"/>
+  <rect x="0" y="1056" width="3456" height="96"  fill="#000000"/>
+  <!-- Centre crosshair -->
+  <line x1="1728" y1="332" x2="1728" y2="532" stroke="white" stroke-width="3" opacity="0.5"/>
+  <line x1="1628" y1="432" x2="1828" y2="432" stroke="white" stroke-width="3" opacity="0.5"/>
+  <circle cx="1728" cy="432" r="80" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
+  <!-- Label -->
+  <text x="1728" y="1120" text-anchor="middle" font-family="monospace" font-size="40" fill="#888">SMPTE COLOR BARS — 3456×1152 — 9m × 3m (3:1)</text>
 </svg>

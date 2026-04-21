@@ -1,8 +1,10 @@
 'use strict';
 
 const ScreenTest = (() => {
+  const VENUE = { w: 3456, h: 1152, physW: 9, physH: 3, unit: 'm', ratio: '3:1' };
+
   let state = {
-    screenW: 1920, screenH: 1080,
+    screenW: VENUE.w, screenH: VENUE.h,
     pip: 'none',
     bg: { type: 'none', id: null },
     fg: { type: 'none', id: null },
@@ -15,11 +17,9 @@ const ScreenTest = (() => {
   let library = [];
 
   const RES_PRESETS = [
-    { label: '1920×1080', w: 1920, h: 1080 },
-    { label: '3840×1080', w: 3840, h: 1080 },
-    { label: '2560×1440', w: 2560, h: 1440 },
-    { label: '1280×720',  w: 1280, h: 720  },
-    { label: '1024×768',  w: 1024, h: 768  }
+    { label: 'Venue Screen — 3456×1152', w: 3456, h: 1152, venue: true },
+    { label: '1920×1080 (HD)',            w: 1920, h: 1080 },
+    { label: '1280×720 (HD Ready)',       w: 1280, h: 720  }
   ];
 
   const HOLDINGS = [
@@ -60,6 +60,8 @@ const ScreenTest = (() => {
     el.resPresets      = $('res-presets');
     el.customW         = $('custom-w');
     el.customH         = $('custom-h');
+    el.metaPhys        = $('meta-phys');
+    el.metaPhysChip    = $('meta-phys-chip');
 
     try { await ScreenTestDB.open(); } catch (e) { toast('Media library unavailable in this browser', 'error'); }
 
@@ -136,6 +138,9 @@ const ScreenTest = (() => {
     el.screenDisplay.style.height = Math.round(state.screenH * scale) + 'px';
     el.metaRes.textContent   = state.screenW + ' × ' + state.screenH;
     el.metaScale.textContent = Math.round(scale * 100) + '%';
+    const isVenue = state.screenW === VENUE.w && state.screenH === VENUE.h;
+    el.metaPhys.textContent = isVenue ? `${VENUE.physW}m × ${VENUE.physH}m (${VENUE.ratio})` : '—';
+    el.metaPhysChip.style.display = isVenue ? '' : 'none';
   }
 
   // ── PIP ──────────────────────────────────────────────────────────
