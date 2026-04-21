@@ -969,6 +969,18 @@ label { user-select: none; }
 }
 .pip-card:hover .pip-card-del { display: flex; }
 
+/* Export/Import toolbar in Custom Presets */
+.pip-custom-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.pip-custom-toolbar .btn-secondary {
+  font-size: 10px;
+  padding: 3px 8px;
+  flex: 1;
+}
+
 /* ── Brand Assets ────────────────────────────────────────────────── */
 .brand-grid {
   display: grid;

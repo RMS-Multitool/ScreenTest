@@ -182,6 +182,7 @@ const ScreenTest = (() => {
     state.pip = id;
     document.querySelectorAll('.pip-card').forEach(c => c.classList.toggle('active', c.dataset.pip === id));
     updatePipLayout();
+    syncFg2();
     updateMetaPip();
     saveState();
   }
@@ -412,28 +413,114 @@ const ScreenTest = (() => {
 
   // ── Export Template ─────────────────────────────────────────────
   function exportTemplate() {
+    const TW = 3456, TH = 1152;
     const pip = getPipById(state.pip);
-    const template = {
-      version: 1,
-      screenW: state.screenW,
-      screenH: state.screenH,
-      pip: state.pip,
-      pipDef: PipPresets.isDual(pip)
-        ? { id: pip.id, name: pip.name, group: pip.group, slots: pip.slots }
-        : { id: pip.id, name: pip.name, group: pip.group, fg: pip.fg || null },
-      bgFit: state.bgFit,
-      fgFit: state.fgFit,
-      fgOpacity: state.fgOpacity,
-      showSafeArea: state.showSafeArea,
-      showPipBorder: state.showPipBorder,
-      exportedAt: new Date().toISOString(),
+    const canvas = document.createElement('canvas');
+    canvas.width = TW; canvas.height = TH;
+    const ctx = canvas.getContext('2d');
+
+    // Dark background
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, TW, TH);
+
+    // Subtle 144px grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= TW; x += 144) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, TH); ctx.stroke(); }
+    for (let y = 0; y <= TH; y += 144) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(TW, y); ctx.stroke(); }
+
+    const drawDashedRect = (x, y, w, h, color) => {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.setLineDash([20, 10]);
+      ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+      ctx.restore();
     };
-    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `screentest-template-${state.screenW}x${state.screenH}-${Date.now()}.json`;
-    a.click();
-    toast('Template exported!', 'success');
+
+    const drawLabel = (text, x, y, color, size) => {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `600 ${size}px Barlow, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    };
+
+    const drawZone = (x, y, w, h, color, label, sublabel) => {
+      // Semi-transparent fill
+      ctx.save();
+      ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb', 'rgba');
+      ctx.fillRect(x, y, w, h);
+      ctx.restore();
+      // Dashed border
+      drawDashedRect(x, y, w, h, color);
+      // Labels centred in zone
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `700 ${Math.max(24, Math.min(60, h / 6))}px Barlow, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, cx, cy - (sublabel ? Math.max(16, h / 12) : 0));
+      if (sublabel) {
+        ctx.font = `400 ${Math.max(18, Math.min(40, h / 9))}px Barlow, Arial, sans-serif`;
+        ctx.fillText(sublabel, cx, cy + Math.max(16, h / 12));
+      }
+      ctx.restore();
+    };
+
+    const safeName = (pip.name || 'None').replace(/[^a-zA-Z0-9_-]/g, '-');
+
+    if (PipPresets.isDual(pip)) {
+      // Blue dashed border + label for full canvas (background zone)
+      drawDashedRect(0, 0, TW, TH, '#4da6ff');
+      drawLabel('BACKGROUND LAYER — FULL SCREEN  |  3456 × 1152px', TW / 2, 18, '#4da6ff', 28);
+      // Green zones for each slot
+      pip.slots.forEach(slot => {
+        const px = PipPresets.toPixels(slot, TW, TH);
+        drawZone(px.x, px.y, px.w, px.h, '#00d47a', 'FOREGROUND',
+          Math.round(px.w) + '×' + Math.round(px.h) + 'px');
+      });
+    } else if (pip.fg) {
+      // Single FG zone
+      drawDashedRect(0, 0, TW, TH, '#4da6ff');
+      drawLabel('BACKGROUND LAYER — FULL SCREEN  |  3456 × 1152px', TW / 2, 18, '#4da6ff', 28);
+      const px = PipPresets.toPixels(pip.fg, TW, TH);
+      drawZone(px.x, px.y, px.w, px.h, '#00d47a', pip.name,
+        Math.round(px.w) + '×' + Math.round(px.h) + 'px');
+    } else {
+      // Background only
+      drawDashedRect(0, 0, TW, TH, '#4da6ff');
+      ctx.save();
+      ctx.fillStyle = '#4da6ff';
+      ctx.font = '700 72px Barlow, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('BACKGROUND ONLY', TW / 2, TH / 2 - 40);
+      ctx.font = '400 48px Barlow, Arial, sans-serif';
+      ctx.fillText('3456 × 1152px', TW / 2, TH / 2 + 40);
+      ctx.restore();
+    }
+
+    // Footer
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '400 24px Barlow, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('FOHP AUSTRALIA · SCREENTEST LAYOUT TEMPLATE · ' + pip.name.toUpperCase(), TW / 2, TH - 12);
+    ctx.restore();
+
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'FOHP-Template-' + safeName + '.png';
+      a.click();
+      toast('Template exported!', 'success');
+    }, 'image/png');
   }
 
   // ── Screenshot ───────────────────────────────────────────────────
@@ -624,7 +711,31 @@ const ScreenTest = (() => {
 
   // ── Custom PIPs ──────────────────────────────────────────────────
   async function loadCustomPips() {
-    customPips = await ScreenTestDB.getSetting('customPips', []);
+    let filePips = null;
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 3000);
+      const res = await fetch('/custom-pips.json', { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.ok) filePips = await res.json();
+    } catch (e) { /* file:// or server unavailable — fall through */ }
+
+    const dbPips = await ScreenTestDB.getSetting('customPips', []);
+
+    if (filePips !== null && Array.isArray(filePips)) {
+      // Merge: file PIPs first (marked as remote), then any locally-created ones not in the file
+      const fileIds = new Set(filePips.map(p => p.id));
+      const localOnly = dbPips.filter(p => !fileIds.has(p.id));
+      customPips = [
+        ...filePips.map(p => ({ ...p, _fromFile: true })),
+        ...localOnly
+      ];
+    } else {
+      // Fallback: load from IndexedDB (file:// local use)
+      customPips = dbPips;
+    }
+    // Save combined array as backup
+    ScreenTestDB.saveSetting('customPips', customPips).catch(() => {});
   }
 
   function saveCustomPips() {
@@ -646,28 +757,66 @@ const ScreenTest = (() => {
       card.className = 'pip-card' + (pip.id === state.pip ? ' active' : '');
       card.dataset.pip = pip.id;
       card.title = pip.name;
-      card.style.position = 'relative';
       card.innerHTML = `<div class="pip-thumb">${PipPresets.thumbnail(pip)}</div><div class="pip-name">${pip.name}</div>`;
       card.onclick = () => selectPip(pip.id);
-      const del = document.createElement('button');
-      del.className = 'pip-card-del'; del.title = 'Delete preset'; del.textContent = '✕';
-      del.onclick = e => { e.stopPropagation(); deleteCustomPip(pip.id); };
-      card.appendChild(del);
+      // Only locally-created PIPs (not from file) get a delete button
+      if (!pip._fromFile) {
+        const del = document.createElement('button');
+        del.className = 'pip-card-del';
+        del.title = 'Delete preset';
+        del.textContent = '×';
+        del.onclick = (e) => { e.stopPropagation(); deleteCustomPip(pip.id); };
+        card.appendChild(del);
+      }
       grid.appendChild(card);
     });
 
-    const addCard = document.createElement('div');
-    addCard.className = 'pip-card pip-add-card';
-    addCard.title = 'Create a custom PIP preset';
-    addCard.innerHTML = `
-      <div class="pip-thumb" style="position:relative;padding-bottom:56.25%">
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent)">+</div>
-      </div>
-      <div class="pip-name">Add New</div>`;
-    addCard.onclick = () => openPipBuilder();
-    grid.appendChild(addCard);
-
     wrap.appendChild(grid);
+
+    // Export / Import toolbar
+    const toolbar = document.createElement('div');
+    toolbar.className = 'pip-custom-toolbar';
+
+    const btnExport = document.createElement('button');
+    btnExport.className = 'btn-secondary';
+    btnExport.textContent = 'Export PIPs';
+    btnExport.onclick = () => {
+      const data = JSON.stringify(customPips.map(({ _fromFile, ...p }) => p), null, 2);
+      const a = document.createElement('a');
+      a.href = 'data:application/json,' + encodeURIComponent(data);
+      a.download = 'custom-pips.json';
+      a.click();
+    };
+
+    const btnImport = document.createElement('button');
+    btnImport.className = 'btn-secondary';
+    btnImport.textContent = 'Import PIPs';
+    btnImport.onclick = () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = async () => {
+        try {
+          const text = await input.files[0].text();
+          const imported = JSON.parse(text);
+          if (!Array.isArray(imported)) throw new Error('Expected array');
+          const existingIds = new Set(customPips.map(p => p.id));
+          const newPips = imported.filter(p => p.id && !existingIds.has(p.id));
+          customPips = [...customPips, ...newPips];
+          saveCustomPips();
+          renderCustomPipGroup();
+          toast(`Imported ${newPips.length} preset(s)`, 'success');
+        } catch (e) {
+          toast('Import failed: invalid JSON file', 'error');
+        }
+      };
+      input.click();
+    };
+
+    toolbar.appendChild(btnExport);
+    toolbar.appendChild(btnImport);
+    wrap.appendChild(toolbar);
+
     el.pipGroups.appendChild(wrap);
   }
 
