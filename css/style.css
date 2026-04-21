@@ -458,6 +458,7 @@ label { user-select: none; }
 }
 
 .pip-card {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
