@@ -4,7 +4,7 @@
     "name": "C PIP",
     "group": "Custom",
     "fg": {
-      "left": 20,
+      "left": 20.6,
       "top": 0,
       "w": 59,
       "h": 100
@@ -34,7 +34,7 @@
     "name": "Left PIP (1920 x 1080)",
     "group": "Custom",
     "fg": {
-      "left": 1,
+      "left": 1.3,
       "top": 4,
       "w": 55,
       "h": 92
@@ -45,8 +45,8 @@
     "name": "Right PIP (1920 x 1080)",
     "group": "Custom",
     "fg": {
-      "left": 44,
-      "top": 4,
+      "left": 43.8,
+      "top": 4.1,
       "w": 55,
       "h": 92
     }
