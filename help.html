@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScreenTest – User Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      font-weight: 400;
+      background: #0a0c10;
+      color: #eaf2fc;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── Top bar ── */
+    .help-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: #0e1218;
+      border-bottom: 1px solid #1a2a3e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-logo {
+      font-weight: 700;
+      font-size: 15px;
+      color: #eaf2fc;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-divider {
+      width: 1px;
+      height: 20px;
+      background: #1a2a3e;
+    }
+
+    .topbar-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      color: #96b4cc;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #1a2a3e;
+      background: transparent;
+      color: #96b4cc;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: #4991C9;
+      color: #eaf2fc;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: #1B75BB;
+      color: #eaf2fc;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #4991C9;
+    }
+
+    /* ── Main content ── */
+    .content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 92px 24px 60px;
+    }
+
+    /* ── Page heading ── */
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #eaf2fc;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: #96b4cc;
+      margin-bottom: 36px;
+    }
+
+    /* ── Table of contents ── */
+    .toc-card {
+      background: #131820;
+      border: 1px solid #1a2a3e;
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+
+    .toc-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #1B75BB;
+      margin-bottom: 14px;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 32px;
+    }
+
+    .toc-list li {
+      font-size: 14px;
+    }
+
+    .toc-list a {
+      color: #96b4cc;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .toc-list a:hover {
+      color: #4991C9;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 52px;
+    }
+
+    h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #eaf2fc;
+      border-left: 4px solid #1B75BB;
+      padding-left: 12px;
+      margin-bottom: 18px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #eaf2fc;
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #eaf2fc;
+      margin-bottom: 14px;
+    }
+
+    ul {
+      list-style: none;
+      margin: 12px 0 16px 0;
+      padding: 0;
+    }
+
+    ul li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 8px;
+      color: #eaf2fc;
+    }
+
+    ul li::before {
+      content: '•';
+      color: #1B75BB;
+      position: absolute;
+      left: 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── Tip / Warn boxes ── */
+    .tip-box {
+      border-left: 3px solid #00d47a;
+      background: rgba(0, 212, 122, 0.07);
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin: 16px 0;
+    }
+
+    .tip-box p {
+      margin: 0;
+      font-size: 14px;
+      color: #eaf2fc;
+    }
+
+    .warn-box {
+      border-left: 3px solid #ff8c35;
+      background: rgba(255, 140, 53, 0.07);
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin: 16px 0;
+    }
+
+    .warn-box p {
+      margin: 0;
+      font-size: 14px;
+      color: #eaf2fc;
+    }
+
+    /* ── Keyboard badges ── */
+    kbd {
+      background: #161e2e;
+      border: 1px solid #1a2a3e;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #eaf2fc;
+      display: inline-block;
+    }
+
+    /* ── Format badges ── */
+    .badge {
+      background: #161e2e;
+      border: 1px solid #1a2a3e;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #96b4cc;
+      margin: 0 2px;
+      display: inline-block;
+    }
+
+    /* ── Nudge table ── */
+    .nudge-table {
+      border-collapse: collapse;
+      margin: 12px 0 16px 0;
+      font-size: 14px;
+    }
+
+    .nudge-table td {
+      padding: 5px 16px 5px 0;
+      color: #eaf2fc;
+      vertical-align: middle;
+    }
+
+    .nudge-table td:first-child {
+      white-space: nowrap;
+    }
+
+    /* ── Troubleshooting subsections ── */
+    .trouble-q {
+      font-weight: 700;
+      color: #eaf2fc;
+      margin-top: 24px;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .trouble-q:first-of-type {
+      margin-top: 0;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white !important; color: #111 !important; }
+      .help-topbar { position: static; background: white !important; border-bottom: 2px solid #1B75BB !important; }
+      .no-print { display: none !important; }
+      h1, h2 { color: #1B75BB !important; }
+      h2 { page-break-before: always; }
+      h2:first-of-type { page-break-before: avoid; }
+      section:first-of-type h2 { page-break-before: avoid; }
+      .toc-card { background: white !important; border: 1px solid #ccc !important; }
+      .tip-box { background: #f0fff8 !important; border-left-color: #00a855 !important; }
+      .warn-box { background: #fff8f0 !important; border-left-color: #cc6600 !important; }
+      kbd { background: #f0f0f0 !important; border-color: #ccc !important; color: #111 !important; }
+      .badge { background: #eee !important; border-color: #ccc !important; color: #444 !important; }
+      a { color: #1B75BB !important; }
+      p, li { color: #222 !important; }
+      .text-dim { color: #555 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fixed top bar -->
+  <header class="help-topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">FOHP · ScreenTest</span>
+      <div class="topbar-divider"></div>
+      <span class="topbar-subtitle">User Guide</span>
+    </div>
+    <div class="topbar-right no-print">
+      <a href="index.html" class="btn-ghost">← Back to App</a>
+      <button class="btn-primary" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <h1 class="page-title">ScreenTest User Guide</h1>
+    <p class="page-subtitle">Reference documentation for the FOHP Australia LED screen preview tool.</p>
+
+    <!-- Table of Contents -->
+    <div class="toc-card">
+      <div class="toc-title">Contents</div>
+      <ol class="toc-list">
+        <li><a href="#s1">1. Overview</a></li>
+        <li><a href="#s2">2. The Screen Preview</a></li>
+        <li><a href="#s3">3. Background Layer</a></li>
+        <li><a href="#s4">4. PIP / Overlay Layout</a></li>
+        <li><a href="#s5">5. Foreground / PIP Content</a></li>
+        <li><a href="#s6">6. Brand Assets</a></li>
+        <li><a href="#s7">7. Media Library</a></li>
+        <li><a href="#s8">8. The PIP Builder (Admin Only)</a></li>
+        <li><a href="#s9">9. Exporting &amp; Screenshots</a></li>
+        <li><a href="#s10">10. Tips &amp; Troubleshooting</a></li>
+      </ol>
+    </div>
+
+    <!-- Section 1 -->
+    <section id="s1">
+      <h2>1. Overview</h2>
+      <p>ScreenTest is a browser-based LED screen preview tool built for FOHP Australia. It lets you design and test content layouts for the venue's 9m × 3m LED screen (3456 × 1152 px, 3:1 aspect ratio) before show day — so you know exactly how your content will look before it goes live.</p>
+
+      <div class="tip-box">
+        <p>All uploaded files are stored locally in your browser only — nothing is sent to any server. Clearing your browser cache will permanently delete all uploaded media and custom presets. Use Export Template and Export PIPs regularly to back up your work.</p>
+      </div>
+
+      <ul>
+        <li>Design and preview background and foreground (PIP) content layouts</li>
+        <li>Upload images and videos to see how they fill the screen</li>
+        <li>Create and save custom PIP presets with precise positioning</li>
+        <li>Export professional layout documents to share with clients or crew</li>
+        <li>Works best in Chrome or Edge</li>
+      </ul>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="s2">
+      <h2>2. The Screen Preview</h2>
+      <p>The large area on the right side of the app is the live preview. It updates in real time as you change settings.</p>
+
+      <ul>
+        <li><strong>Corner registration marks</strong> — The blue crosshairs in each corner are alignment guides. They are not part of the content and won't appear on the actual screen.</li>
+        <li><strong>Metadata bar</strong> — The bar below the preview shows: current resolution (e.g. 3456 × 1152), physical screen size (9m × 3m), the preview zoom scale, and the name of the active PIP preset.</li>
+        <li><strong>Fullscreen mode</strong> — Click the ⛶ Fullscreen button in the top-right corner for an immersive full-window preview. Press Escape or click anywhere to exit.</li>
+        <li><strong>Safe Area toggle</strong> — Enable this in the Screen panel to show a dashed yellow border 5% in from each edge. Content inside this border is safe from edge distortion on the physical screen.</li>
+        <li><strong>PIP Border toggle</strong> — Shows a green outline around the active PIP zone so you can see its exact boundary in the preview.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="s3">
+      <h2>3. Background Layer</h2>
+      <p>The background fills the entire 9m × 3m screen behind any foreground overlay.</p>
+
+      <h3>Uploading media</h3>
+      <p>To upload a background file, click the upload area or drag a file directly onto it. Supported formats: <span class="badge">JPG</span><span class="badge">PNG</span><span class="badge">GIF</span><span class="badge">MP4</span><span class="badge">WebM</span>. Maximum file size: 500 MB. WebP is not supported — convert to PNG or JPG first.</p>
+
+      <div class="tip-box">
+        <p>Files are stored locally in your browser's storage (IndexedDB). They persist across page refreshes and browser restarts, but will be lost if you clear your browser cache or site data.</p>
+      </div>
+
+      <h3>Object Fit — controls how the media fills the screen</h3>
+      <ul>
+        <li><strong>Cover</strong> (default) — Scales and crops the media to fill the screen completely, preserving aspect ratio. Some edges may be cropped.</li>
+        <li><strong>Contain</strong> — Fits the entire media within the screen. Black bars may appear on the sides or top/bottom.</li>
+        <li><strong>Fill</strong> — Stretches the media to exactly fill the screen regardless of aspect ratio.</li>
+      </ul>
+
+      <h3>Holding Images</h3>
+      <p>The Holding Images section contains pre-loaded test patterns and templates. Click any to preview it instantly — great for checking alignment before you have final content. An active holding image has a green border. Click it again to deselect.</p>
+
+      <h3>Clear</h3>
+      <p>Removes the current background without deleting the file from the library.</p>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="s4">
+      <h2>4. PIP / Overlay Layout</h2>
+      <p>This panel controls the layout of the foreground overlay — where on screen the PIP zone appears.</p>
+
+      <p><strong>Preset cards</strong> — Click any card to apply that layout instantly. The preview updates immediately with a smooth transition.</p>
+
+      <h3>Built-in presets</h3>
+      <ul>
+        <li><strong>Background Only</strong> — No foreground overlay is shown. The full screen displays background content only.</li>
+        <li><strong>Foreground Full</strong> — The PIP zone fills the entire screen. Useful when your foreground content should fill everything.</li>
+      </ul>
+
+      <p>Custom presets created by your admin also appear here.</p>
+
+      <h3>Admin mode</h3>
+      <p>A lock icon (🔒) appears in the Custom Presets section header. Click it and enter the admin code to unlock preset creation and management. Contact your system administrator for the code.</p>
+
+      <div class="warn-box">
+        <p>Do not share the admin code. Admin mode allows creating, editing, and deleting presets.</p>
+      </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="s5">
+      <h2>5. Foreground / PIP Content</h2>
+      <p>The foreground layer is the media that plays inside the PIP zone defined by your active layout preset.</p>
+
+      <p>Uploading works the same as the background layer — click or drag to upload. Supported formats: <span class="badge">JPG</span><span class="badge">PNG</span><span class="badge">GIF</span><span class="badge">MP4</span><span class="badge">WebM</span>. WebP is not supported.</p>
+
+      <p><strong>Object Fit</strong> defaults to <strong>Contain</strong> for foreground content, so your media fits neatly inside the PIP zone without cropping.</p>
+
+      <div class="tip-box">
+        <p>If you load a foreground file while the layout is set to 'Background Only', the app will automatically switch to 'Foreground Full' so your content becomes visible straight away.</p>
+      </div>
+
+      <h3>Clear</h3>
+      <p>Removes the current foreground without deleting the file from the library.</p>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="s6">
+      <h2>6. Brand Assets</h2>
+      <p>Brand Assets are a dedicated library for logos, sponsor images, and branded graphics you use regularly across different events.</p>
+
+      <p>Supported formats: <span class="badge">JPG</span><span class="badge">PNG</span><span class="badge">SVG</span> (no video, no WebP).</p>
+
+      <h3>Managing assets</h3>
+      <p>Hover over any asset card to reveal three action buttons:</p>
+      <ul>
+        <li><strong>Set as BG</strong> — Use the asset as the background layer</li>
+        <li><strong>Set as FG</strong> — Use the asset as the foreground / PIP content</li>
+        <li><strong>Remove</strong> — Permanently delete the asset from storage</li>
+      </ul>
+
+      <div class="tip-box">
+        <p>Brand assets also appear in the main Media Library, so you can access them from either panel.</p>
+      </div>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="s7">
+      <h2>7. Media Library</h2>
+      <p>The Media Library shows every image and video you have uploaded (brand assets appear in both the Brand Assets panel and here).</p>
+
+      <p>Each card shows:</p>
+      <ul>
+        <li>A thumbnail preview</li>
+        <li>A type badge: <strong>IMG</strong> for images, <strong>▶ VID</strong> for videos, plus the file size</li>
+        <li>On hover: <strong>BG</strong>, <strong>FG</strong>, and <strong>✕</strong> (delete) buttons</li>
+      </ul>
+
+      <p>Active items are highlighted — a blue border means it is currently used as the background, a green border means it is the active foreground.</p>
+
+      <p>Items are listed newest first. Deleted items are permanently removed from browser storage.</p>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="s8">
+      <h2>8. The PIP Builder</h2>
+      <p>The PIP Builder lets you create custom PIP presets with precise, pixel-accurate positioning. It requires admin mode to be unlocked.</p>
+
+      <p><strong>To open:</strong> With admin mode unlocked, click the <strong>+ New PIP</strong> button.</p>
+
+      <h3>The canvas</h3>
+      <p>The canvas represents the full 9m × 3m venue screen. The green box is your PIP zone. Drag the centre of the box to move it. Drag any of the 8 handles (corners and edges) to resize it.</p>
+
+      <p>Guide overlays on the canvas:</p>
+      <ul>
+        <li><strong>Rule of thirds lines</strong> — Divide the screen into 9 equal sections</li>
+        <li><strong>Centre crosshair</strong> — Marks the exact centre of the screen</li>
+      </ul>
+
+      <h3>Dual PIP mode</h3>
+      <p>Tick "Add second PIP slot" to add a second zone (shown in orange). Both slots are independently positioned and resized. Click a slot to make it active — the info panel below updates to show that slot's dimensions.</p>
+
+      <h3>Info panel</h3>
+      <p>Below the canvas, four values update in real time showing the active slot's:</p>
+      <ul>
+        <li><strong>Width and Height</strong> — as percentage of screen and in physical metres</li>
+        <li><strong>From Left and From Top</strong> — offset position as percentage and metres</li>
+      </ul>
+      <p>Example: Width 50% = 4.50m means the PIP zone is half the screen width, which is 4.5 metres on the physical screen.</p>
+
+      <h3>Aspect ratio lock</h3>
+      <p>Enter your content's pixel resolution (e.g. 1920 width, 1080 height) and tick <strong>Lock ratio</strong>. Resizing will now maintain that aspect ratio automatically. The simplified ratio (e.g. 16:9) is displayed next to the inputs.</p>
+
+      <h3>Keyboard nudge</h3>
+      <p>For fine positioning, click on the canvas area (not inside a text input), then use:</p>
+      <table class="nudge-table">
+        <tr>
+          <td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td>
+          <td>Move 0.5% per press</td>
+        </tr>
+        <tr>
+          <td><kbd>Shift</kbd> + <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td>
+          <td>Move 0.1% per press</td>
+        </tr>
+      </table>
+
+      <div class="tip-box">
+        <p>Arrow key nudging doesn't work if a text input field is focused. Click on the canvas area first, then use the arrow keys.</p>
+      </div>
+
+      <h3>Saving</h3>
+      <p>Enter a preset name (up to 40 characters) and click <strong>Save Preset</strong>. The preset appears in the PIP Layout panel immediately and is stored in your browser.</p>
+    </section>
+
+    <!-- Section 9 -->
+    <section id="s9">
+      <h2>9. Exporting &amp; Screenshots</h2>
+
+      <h3>Export Template</h3>
+      <p>Generates a professional PNG layout document showing the full screen configuration. Click <strong>Export Template</strong> in the top bar.</p>
+
+      <p>The exported file includes:</p>
+      <ul>
+        <li>Screen dimensions (3456 × 1152 px) and physical size (9m × 3m)</li>
+        <li>A pixel grid for reference</li>
+        <li>All PIP zones with their exact sizes (pixels, percentage, metres) and positions</li>
+        <li>FOHP-branded header and footer</li>
+        <li>The active preset name</li>
+      </ul>
+
+      <p>The file downloads as <code>FOHP-Template-[PresetName].png</code>. Use this to share layout plans with clients, production crew, or for printed documentation.</p>
+
+      <h3>Screenshot</h3>
+      <p>Click <strong>📷 Screenshot</strong> to capture the current preview at full 3456 × 1152 resolution with all layers composited exactly as shown. Downloads as a PNG. Use this to show clients how their content will look on the physical screen.</p>
+
+      <div class="tip-box">
+        <p>Screenshots reflect exactly what's shown in the preview — including Object Fit settings. Make sure your layers are configured correctly before exporting.</p>
+      </div>
+    </section>
+
+    <!-- Section 10 -->
+    <section id="s10">
+      <h2>10. Tips &amp; Troubleshooting</h2>
+
+      <p class="trouble-q">My uploaded files have disappeared.</p>
+      <p>All media is stored locally in your browser. Clearing browser cache or site data permanently removes all uploaded files. Before clearing your cache, download any important files directly. Back up custom presets using the Export PIPs option in admin mode.</p>
+
+      <p class="trouble-q">WebP files won't upload.</p>
+      <p>WebP is not supported. Convert your image to PNG or JPG using any image editor (such as Preview on Mac, Paint on Windows) or a free online converter, then upload again.</p>
+
+      <p class="trouble-q">Arrow keys aren't nudging the PIP box.</p>
+      <p>Click somewhere on the builder canvas (not inside a text field like the name or resolution inputs), then try the arrow keys again.</p>
+
+      <p class="trouble-q">The fullscreen view looks different from the preview.</p>
+      <p>The fullscreen view scales the preview to fit your monitor. Most monitors are 16:9 — much taller relative to width than the actual 3:1 venue screen. The proportions shown in the regular preview area are more representative. Use fullscreen to check how media fills the space, not to judge proportions.</p>
+
+      <p class="trouble-q">Custom presets have disappeared.</p>
+      <p>Custom presets are stored in your browser. They are lost if you clear site data. Back them up regularly using <strong>Export PIPs</strong> in admin mode. Restore them with <strong>Import PIPs</strong>.</p>
+
+      <p class="trouble-q">Video isn't playing in the preview.</p>
+      <p>Videos are muted by default due to browser autoplay rules — this is normal. If a video doesn't play at all, try a different browser (Chrome or Edge recommended). Very large video files may be slow to load in the preview; this does not affect actual playback on the venue system.</p>
+
+      <p class="trouble-q">The preview scale is very small.</p>
+      <p>The preview scales to fit the available window space. The screen is 3:1 — much wider than tall — so it will always appear narrow on a standard monitor. Use the fullscreen button for the largest possible view.</p>
+    </section>
+
+  </main>
+
+</body>
+</html>
