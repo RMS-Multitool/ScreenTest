@@ -996,10 +996,10 @@ const ScreenTest = (() => {
 
     const info = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
     const { left, top, w, h } = info;
-    $('pbi-w').textContent  = Math.round(w)    + '%';
-    $('pbi-h').textContent  = Math.round(h)    + '%';
-    $('pbi-l').textContent  = Math.round(left) + '%';
-    $('pbi-t').textContent  = Math.round(top)  + '%';
+    $('pbi-w').textContent  = w.toFixed(1)    + '%';
+    $('pbi-h').textContent  = h.toFixed(1)    + '%';
+    $('pbi-l').textContent  = left.toFixed(1) + '%';
+    $('pbi-t').textContent  = top.toFixed(1)  + '%';
     $('pbi-wm').textContent = (w    / 100 * VENUE.physW).toFixed(2) + 'm';
     $('pbi-hm').textContent = (h    / 100 * VENUE.physH).toFixed(2) + 'm';
     $('pbi-lm').textContent = (left / 100 * VENUE.physW).toFixed(2) + 'm';
@@ -1128,10 +1128,30 @@ const ScreenTest = (() => {
 
     document.addEventListener('mouseup', () => { builder.drag = null; });
 
+    // Arrow-key nudge: 0.5% per press, 0.1% with Shift held
+    document.addEventListener('keydown', e => {
+      const modal = $('pip-builder-modal');
+      if (!modal.classList.contains('active')) return;
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
+      const focused = document.activeElement;
+      if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) return;
+      e.preventDefault();
+      const step = e.shiftKey ? 0.1 : 0.5;
+      const fg = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
+      let { left, top, w, h } = fg;
+      if (e.key === 'ArrowLeft')  left = clamp(left - step, 0, 100 - w);
+      if (e.key === 'ArrowRight') left = clamp(left + step, 0, 100 - w);
+      if (e.key === 'ArrowUp')    top  = clamp(top  - step, 0, 100 - h);
+      if (e.key === 'ArrowDown')  top  = clamp(top  + step, 0, 100 - h);
+      const result = { left, top, w, h };
+      if (builder.activeSlot === 2) builder.fg2 = result; else builder.fg = result;
+      updateBuilderBox();
+    });
+
     $('pip-builder-save').onclick = () => {
       const name = $('pip-builder-name').value.trim();
       if (!name) { toast('Please enter a preset name', 'error'); $('pip-builder-name').focus(); return; }
-      const round = fg => ({ left: Math.round(fg.left), top: Math.round(fg.top), w: Math.round(fg.w), h: Math.round(fg.h) });
+      const round = fg => ({ left: Math.round(fg.left*10)/10, top: Math.round(fg.top*10)/10, w: Math.round(fg.w*10)/10, h: Math.round(fg.h*10)/10 });
       const layout = builder.isDual
         ? { slots: [round(builder.fg), round(builder.fg2)] }
         : { fg: round(builder.fg) };
