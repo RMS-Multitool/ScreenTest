@@ -377,6 +377,12 @@ label { user-select: none; }
   color: var(--text-dim);
   letter-spacing: 0.3px;
 }
+.drop-zone-local-notice {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
 
 /* Holding images grid */
 .holding-grid {

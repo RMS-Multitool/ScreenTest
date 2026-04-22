@@ -373,6 +373,7 @@ const ScreenTest = (() => {
   function handleUpload(layer, file) {
     if (!file) return;
     if (!['image/', 'video/'].some(t => file.type.startsWith(t))) { toast('Only image and video files are supported', 'error'); return; }
+    if (file.type === 'image/webp') { toast('WebP is not supported. Please use JPG, PNG, GIF, MP4, or WebM.', 'error'); return; }
     if (file.size > 500 * 1024 * 1024) { toast('File too large (max 500MB)', 'error'); return; }
     const id = 'media_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     ScreenTestDB.saveMedia(id, file, { name: file.name, type: file.type, size: file.size })
@@ -753,7 +754,7 @@ const ScreenTest = (() => {
   function bindDropZone(zone, layer) {
     zone.onclick = () => {
       const inp = document.createElement('input');
-      inp.type = 'file'; inp.accept = 'image/*,video/*';
+      inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,video/mp4,video/webm';
       inp.onchange = () => handleUpload(layer, inp.files[0]);
       inp.click();
     };
@@ -1217,7 +1218,7 @@ const ScreenTest = (() => {
   function bindBrandDropZone(zone) {
     zone.onclick = () => {
       const inp = document.createElement('input');
-      inp.type = 'file'; inp.accept = 'image/*';
+      inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,image/svg+xml';
       inp.onchange = () => handleBrandUpload(inp.files[0]);
       inp.click();
     };
@@ -1229,6 +1230,7 @@ const ScreenTest = (() => {
   function handleBrandUpload(file) {
     if (!file) return;
     if (!file.type.startsWith('image/')) { toast('Brand assets must be image files', 'error'); return; }
+    if (file.type === 'image/webp') { toast('WebP is not supported. Please use JPG, PNG, or SVG.', 'error'); return; }
     const id = 'brand_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     ScreenTestDB.saveMedia(id, file, { name: file.name, type: file.type, size: file.size, brand: true })
       .then(() => { toast('Brand asset saved: ' + file.name, 'success'); loadBrandAssets(); refreshLibrary(); })
