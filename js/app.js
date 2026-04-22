@@ -1023,17 +1023,13 @@ const ScreenTest = (() => {
     const toW = (hPct) => hPct * builder.ratio / (VENUE.w / VENUE.h);
 
     function applyRatioToBox() {
-      if (!builder.ratio) return;
-      const screenAspect = VENUE.w / VENUE.h;
+      const rw = parseInt(resW.value), rh = parseInt(resH.value);
+      if (!rw || !rh) return;
       const src = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
-      let { left, top, w } = src;
-      let newH = w * screenAspect / builder.ratio;
-      if (newH > 100 - top) {
-        newH = 100 - top;
-        w = clamp(newH * builder.ratio / screenAspect, MIN, 100 - left);
-        newH = w * screenAspect / builder.ratio;
-      }
-      const result = { left, top, w, h: Math.max(MIN, newH) };
+      const { left, top } = src;
+      const newW = clamp(rw / VENUE.w * 100, MIN, 100 - left);
+      const newH = clamp(rh / VENUE.h * 100, MIN, 100 - top);
+      const result = { left, top, w: newW, h: newH };
       if (builder.activeSlot === 2) builder.fg2 = result; else builder.fg = result;
       updateBuilderBox();
     }
