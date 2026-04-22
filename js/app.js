@@ -1020,10 +1020,6 @@ const ScreenTest = (() => {
     const ratioLbl= $('pip-ratio-display');
     const MIN     = 2;
     const clamp   = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-    // Snap a % value to the nearest whole pixel on the real screen
-    const snapX = v => Math.round(v / 100 * VENUE.w) / VENUE.w * 100;
-    const snapY = v => Math.round(v / 100 * VENUE.h) / VENUE.h * 100;
-    const snapFg = fg => ({ left: snapX(fg.left), top: snapY(fg.top), w: snapX(fg.w), h: snapY(fg.h) });
 
     // Ratio helpers — ratio is stored in pixel space (w÷h of the content)
     // In %-of-screen space: hPct = wPct * (screenW/screenH) / pixelRatio
@@ -1126,7 +1122,7 @@ const ScreenTest = (() => {
         case 's':  { const r=fitH(sf.h+dy,100-sf.top,100-sf.left); h=r.h; if(locked)w=r.w; break; }
         case 'n':  { const r=fitH(sf.h-dy,sf.top+sf.h,100-sf.left); h=r.h; top=sf.top+sf.h-h; if(locked)w=r.w; break; }
       }
-      const result = snapFg({ left, top, w, h });
+      const result = { left, top, w, h };
       if (builder.drag.slot === 2) builder.fg2 = result; else builder.fg = result;
       updateBuilderBox();
     });
@@ -1141,15 +1137,14 @@ const ScreenTest = (() => {
       const focused = document.activeElement;
       if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) return;
       e.preventDefault();
-      const stepX = (e.shiftKey ? 10 : 1) / VENUE.w * 100;
-      const stepY = (e.shiftKey ? 10 : 1) / VENUE.h * 100;
+      const step = e.shiftKey ? 0.1 : 0.5;
       const fg = builder.activeSlot === 2 ? builder.fg2 : builder.fg;
       let { left, top, w, h } = fg;
-      if (e.key === 'ArrowLeft')  left = clamp(left - stepX, 0, 100 - w);
-      if (e.key === 'ArrowRight') left = clamp(left + stepX, 0, 100 - w);
-      if (e.key === 'ArrowUp')    top  = clamp(top  - stepY, 0, 100 - h);
-      if (e.key === 'ArrowDown')  top  = clamp(top  + stepY, 0, 100 - h);
-      const result = snapFg({ left, top, w, h });
+      if (e.key === 'ArrowLeft')  left = clamp(left - step, 0, 100 - w);
+      if (e.key === 'ArrowRight') left = clamp(left + step, 0, 100 - w);
+      if (e.key === 'ArrowUp')    top  = clamp(top  - step, 0, 100 - h);
+      if (e.key === 'ArrowDown')  top  = clamp(top  + step, 0, 100 - h);
+      const result = { left, top, w, h };
       if (builder.activeSlot === 2) builder.fg2 = result; else builder.fg = result;
       updateBuilderBox();
     });
