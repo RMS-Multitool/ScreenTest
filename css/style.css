@@ -694,6 +694,22 @@ label { user-select: none; }
   height: 100%;
 }
 
+/* Preview drag-and-drop highlight */
+.layer.preview-drag-over::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 140, 255, 0.18);
+  border: 2px dashed rgba(0, 180, 255, 0.85);
+  pointer-events: none;
+  z-index: 50;
+}
+.layer-fg.preview-drag-over::after,
+.pip-slot.preview-drag-over::after {
+  background: rgba(0, 212, 122, 0.18);
+  border-color: rgba(0, 212, 122, 0.85);
+}
+
 /* PIP border indicator — ::before sits on top of any img/video inside the layer */
 .layer-fg.show-border::before {
   content: '';
