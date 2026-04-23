@@ -793,6 +793,8 @@ const ScreenTest = (() => {
     $('btn-fullscreen').onclick = openFullscreen;
     el.fullscreenOverlay.onclick = closeFullscreen;
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
+
+    bindPreviewDrop();
   }
 
   function clearLayer(layer) {
@@ -812,6 +814,51 @@ const ScreenTest = (() => {
     zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
     zone.addEventListener('drop',      e => { e.preventDefault(); zone.classList.remove('drag-over'); handleUpload(layer, e.dataTransfer.files[0]); });
+  }
+
+  function bindPreviewDrop() {
+    const display = el.screenDisplay;
+
+    function resolveDropLayer(e) {
+      // Check if the cursor is over a visible foreground layer
+      const fgEl = e.target.closest('.layer-fg');
+      if (fgEl && fgEl.style.display !== 'none') return 'fg';
+      return 'bg';
+    }
+
+    function clearDragState() {
+      el.layerBg.classList.remove('preview-drag-over', 'preview-drag-over-fg');
+      el.layerFg.classList.remove('preview-drag-over', 'preview-drag-over-fg');
+      el.layerFg2.classList.remove('preview-drag-over', 'preview-drag-over-fg');
+      delete display.dataset.dropTarget;
+    }
+
+    display.addEventListener('dragover', e => {
+      if (!e.dataTransfer.types.includes('Files')) return;
+      e.preventDefault();
+      const layer = resolveDropLayer(e);
+      display.dataset.dropTarget = layer;
+      if (layer === 'fg') {
+        el.layerBg.classList.remove('preview-drag-over');
+        el.layerFg.classList.add('preview-drag-over');
+        el.layerFg2.classList.add('preview-drag-over');
+      } else {
+        el.layerFg.classList.remove('preview-drag-over');
+        el.layerFg2.classList.remove('preview-drag-over');
+        el.layerBg.classList.add('preview-drag-over');
+      }
+    });
+
+    display.addEventListener('dragleave', e => {
+      if (!display.contains(e.relatedTarget)) clearDragState();
+    });
+
+    display.addEventListener('drop', e => {
+      e.preventDefault();
+      const layer = display.dataset.dropTarget || 'bg';
+      clearDragState();
+      handleUpload(layer, e.dataTransfer.files[0]);
+    });
   }
 
   function setActiveSegment(ctrl, val) {
