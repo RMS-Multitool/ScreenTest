@@ -12,8 +12,9 @@ const ScreenTest = (() => {
     showSafeArea: false, showPipBorder: true
   };
 
-  const blobUrls  = { bg: null, fg: null };
-  const blobMeta  = { bg: null, fg: null };
+  const blobUrls     = { bg: null, fg: null };
+  const blobMeta     = { bg: null, fg: null };
+  const webcamStreams = { bg: null, fg: null };
   let library     = [];
   let customPips  = [];
   let brandAssets = [];
@@ -254,6 +255,13 @@ const ScreenTest = (() => {
         card.onclick = () => setLayerSource(layer, 'holding', h.id);
         grid.appendChild(card);
       });
+      // Webcam card
+      const wcCard = document.createElement('div');
+      wcCard.className = 'holding-card holding-card-webcam' + (state[layer].type === 'webcam' ? ' active' : '');
+      wcCard.title = 'Live Webcam';
+      wcCard.innerHTML = `<div class="webcam-card-icon">📷</div><div class="holding-card-name">Live Webcam</div>`;
+      wcCard.onclick = () => setLayerSource(layer, 'webcam', 'webcam');
+      grid.appendChild(wcCard);
     });
   }
 
@@ -277,6 +285,7 @@ const ScreenTest = (() => {
     const fit = layer === 'bg' ? state.bgFit : state.fgFit;
 
     if (blobUrls[layer]) { URL.revokeObjectURL(blobUrls[layer]); blobUrls[layer] = null; }
+    if (webcamStreams[layer]) { webcamStreams[layer].getTracks().forEach(t => t.stop()); webcamStreams[layer] = null; }
     div.innerHTML = '';
 
     if (src.type === 'none') {
@@ -291,6 +300,27 @@ const ScreenTest = (() => {
       img.src = h.path; img.style.objectFit = fit;
       div.appendChild(img);
       syncFg2();
+      return;
+    }
+    if (src.type === 'webcam') {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast('Webcam not supported in this browser', 'error'); return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        webcamStreams[layer] = stream;
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = video.muted = video.playsInline = true;
+        video.style.objectFit = fit;
+        div.appendChild(video);
+        syncFg2();
+      } catch (err) {
+        toast('Webcam access denied or unavailable', 'error');
+        state[layer] = { type: 'none', id: null };
+        div.innerHTML = `<div class="layer-placeholder"><div class="layer-placeholder-icon">${layer === 'bg' ? '🖥' : '📺'}</div><div>No ${layer === 'bg' ? 'Background' : 'Foreground'} Media</div></div>`;
+        syncFg2();
+      }
       return;
     }
     if (src.type === 'library') {
@@ -322,9 +352,17 @@ const ScreenTest = (() => {
     el.layerFg2.innerHTML = '';
     const m = el.layerFg.querySelector('img, video');
     if (!m) return;
-    const clone = m.tagName === 'VIDEO'
-      ? Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true })
-      : Object.assign(document.createElement('img'), { src: m.src });
+    let clone;
+    if (m.tagName === 'VIDEO' && m.srcObject) {
+      // Webcam — share the same MediaStream
+      clone = document.createElement('video');
+      clone.srcObject = m.srcObject;
+      clone.autoplay = clone.muted = clone.playsInline = true;
+    } else if (m.tagName === 'VIDEO') {
+      clone = Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true });
+    } else {
+      clone = Object.assign(document.createElement('img'), { src: m.src });
+    }
     clone.style.objectFit = state.fgFit;
     el.layerFg2.appendChild(clone);
   }
@@ -339,6 +377,10 @@ const ScreenTest = (() => {
     if (src.type === 'holding') {
       const h = HOLDINGS.find(x => x.id === src.id);
       if (h) { const img = document.createElement('img'); img.src = h.path; inner.appendChild(img); }
+      return;
+    }
+    if (src.type === 'webcam') {
+      inner.innerHTML = '<div class="layer-empty-hint">📷 Live Webcam</div>';
       return;
     }
     if (src.type === 'library' && blobUrls[layer]) {
@@ -365,8 +407,16 @@ const ScreenTest = (() => {
   function refreshHoldingActive(layer) {
     const grid = layer === 'bg' ? el.bgHoldingGrid : el.fgHoldingGrid;
     const src = state[layer];
-    grid.querySelectorAll('.holding-card').forEach((c, i) =>
-      c.classList.toggle('active', src.type === 'holding' && src.id === HOLDINGS[i].id));
+    grid.querySelectorAll('.holding-card').forEach(c => {
+      if (c.classList.contains('holding-card-webcam')) {
+        c.classList.toggle('active', src.type === 'webcam');
+      } else {
+        const id = c.querySelector('img') && c.querySelector('img').alt
+          ? HOLDINGS.find(h => c.querySelector('img').alt === h.name)?.id
+          : null;
+        c.classList.toggle('active', src.type === 'holding' && src.id === id);
+      }
+    });
   }
 
   // ── Upload ───────────────────────────────────────────────────────
@@ -746,6 +796,7 @@ const ScreenTest = (() => {
   }
 
   function clearLayer(layer) {
+    if (webcamStreams[layer]) { webcamStreams[layer].getTracks().forEach(t => t.stop()); webcamStreams[layer] = null; }
     state[layer] = { type: 'none', id: null };
     applyLayerMedia(layer); updateLayerPreview(layer);
     refreshHoldingActive(layer); refreshLibraryActive(); saveState();
