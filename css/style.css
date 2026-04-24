@@ -1344,6 +1344,7 @@ label { user-select: none; }
   letter-spacing: 0.4px;
 }
 .venue-admin-only { display: none; }
+.venue-overlay.venue-admin-mode .venue-admin-only { display: inline-flex; }
 
 .venue-stage {
   flex: 1;
