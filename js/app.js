@@ -91,6 +91,7 @@ const ScreenTest = (() => {
     ro.observe(el.previewWrapper);
     updatePreviewSize();
     bindEvents();
+    initTour();
   }
 
   // ── State persistence ────────────────────────────────────────────
@@ -1373,7 +1374,129 @@ const ScreenTest = (() => {
       .catch(e => toast('Save failed: ' + e.message, 'error'));
   }
 
-  return { init };
+  // ── Tour ────────────────────────────────────────────────────────
+  const TOUR_STEPS = [
+    {
+      target: null,
+      title: 'Welcome to ScreenTest',
+      body: 'A live preview tool for the FOHP 9m × 3m LED screen. This short tour covers the key features — it only takes a minute.',
+    },
+    {
+      target: '#preview-wrapper',
+      title: 'Screen Preview',
+      body: 'Your live screen preview — updates in real time as you make changes. You can also drag image or video files directly onto it to load them instantly.',
+      position: 'left',
+    },
+    {
+      target: '#panel-bg',
+      title: 'Background Layer',
+      body: 'Upload an image or video to fill the full 9m × 3m screen. Holding Images gives you test patterns plus live options like webcam and screen share.',
+      position: 'right',
+    },
+    {
+      target: '#panel-pip',
+      title: 'PIP / Overlay Layout',
+      body: 'Choose how your foreground content is positioned on screen. Pick a built-in preset or build a custom zone with precise pixel-perfect positioning.',
+      position: 'right',
+    },
+    {
+      target: '#panel-fg',
+      title: 'Foreground Content',
+      body: 'Load the content that plays inside your PIP zone — a camera feed, sponsor graphic, or secondary video. Supports images, video, webcam, and screen share.',
+      position: 'right',
+    },
+    {
+      target: '.header-actions',
+      title: 'Export & Screenshot',
+      body: 'Export Template creates a layout document with exact pixel dimensions for your design crew. Screenshot captures the full 3456 × 1152 px preview as a PNG.',
+      position: 'bottom',
+    },
+    {
+      target: null,
+      title: "You're all set!",
+      body: 'Tap ? Help at any time for the full user guide, or click ▶ Tour in the header to replay this walkthrough.',
+    },
+  ];
+
+  let tourStep = 0;
+
+  function initTour() {
+    $('btn-tour').onclick = startTour;
+    $('tour-skip').onclick = endTour;
+    $('tour-btn-prev').onclick = () => advanceTour(-1);
+    $('tour-btn-next').onclick = () => advanceTour(1);
+    if (localStorage.getItem('screentest-tour-done') !== '1') startTour();
+  }
+
+  function startTour() {
+    tourStep = 0;
+    $('tour-overlay').classList.add('active');
+    showTourStep();
+  }
+
+  function endTour() {
+    $('tour-overlay').classList.remove('active');
+    localStorage.setItem('screentest-tour-done', '1');
+  }
+
+  function advanceTour(dir) {
+    const next = tourStep + dir;
+    if (next < 0) return;
+    if (next >= TOUR_STEPS.length) { endTour(); return; }
+    tourStep = next;
+    showTourStep();
+  }
+
+  function showTourStep() {
+    const step     = TOUR_STEPS[tourStep];
+    const spotlight = $('tour-spotlight');
+    const popover   = $('tour-popover');
+    const total     = TOUR_STEPS.length;
+
+    $('tour-title').textContent      = step.title;
+    $('tour-body').textContent        = step.body;
+    $('tour-step-count').textContent  = (tourStep + 1) + ' / ' + total;
+    $('tour-btn-prev').style.visibility = tourStep > 0 ? 'visible' : 'hidden';
+    $('tour-btn-next').textContent    = tourStep === total - 1 ? 'Done ✓' : 'Next →';
+
+    const PAD = 10, GAP = 16, PW = 264;
+
+    if (!step.target) {
+      spotlight.style.opacity = '0';
+      popover.style.cssText = 'top:50%;left:50%;transform:translate(-50%,-50%)';
+      return;
+    }
+
+    const target = document.querySelector(step.target);
+    if (!target) { spotlight.style.opacity = '0'; return; }
+
+    // Expand collapsed panel if needed
+    const panel = target.classList.contains('panel') ? target : target.closest('.panel');
+    if (panel && panel.classList.contains('collapsed')) panel.classList.remove('collapsed');
+    target.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+
+    const r = target.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    spotlight.style.cssText = `opacity:1;top:${r.top - PAD}px;left:${r.left - PAD}px;width:${r.width + PAD * 2}px;height:${r.height + PAD * 2}px`;
+
+    let css = 'transform:none;';
+    if (step.position === 'right') {
+      const left = Math.min(r.right + PAD + GAP, vw - PW - 8);
+      const top  = Math.max(8, Math.min(r.top - PAD, vh - 200));
+      css += `top:${top}px;left:${left}px;right:auto;bottom:auto`;
+    } else if (step.position === 'left') {
+      const left = Math.max(8, r.left - PW - PAD - GAP);
+      const top  = Math.max(8, Math.min(r.top - PAD, vh - 200));
+      css += `top:${top}px;left:${left}px;right:auto;bottom:auto`;
+    } else if (step.position === 'bottom') {
+      const left = Math.max(8, Math.min(r.left, vw - PW - 8));
+      css += `top:${r.bottom + PAD + GAP}px;left:${left}px;right:auto;bottom:auto`;
+    }
+    popover.style.cssText = css;
+  }
+
+  return { init, startTour, endTour };
 })();
 
 document.addEventListener('DOMContentLoaded', () => ScreenTest.init());

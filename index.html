@@ -20,6 +20,7 @@
     </div>
     <div class="header-actions">
       <a href="help.html" target="_blank" class="btn btn-ghost" title="User Guide">? Help</a>
+      <button class="btn btn-ghost" id="btn-tour" title="Take a quick tour">▶ Tour</button>
       <button class="btn btn-secondary" id="btn-export-template">Export Template</button>
       <button class="btn btn-secondary" id="btn-screenshot">📷 Screenshot</button>
       <button class="btn btn-primary"   id="btn-fullscreen">⛶ Fullscreen</button>
@@ -333,6 +334,23 @@
       <div class="modal-footer">
         <button id="pip-builder-cancel" class="btn btn-secondary">Cancel</button>
         <button id="pip-builder-save" class="btn btn-primary">Save Preset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tour overlay ─────────────────────────────────────────── -->
+  <div id="tour-overlay" class="tour-overlay">
+    <div id="tour-spotlight" class="tour-spotlight"></div>
+    <div id="tour-popover" class="tour-popover">
+      <div class="tour-header">
+        <span id="tour-step-count" class="tour-step-count"></span>
+        <button class="tour-skip" id="tour-skip">✕ Skip</button>
+      </div>
+      <div id="tour-title" class="tour-title"></div>
+      <div id="tour-body" class="tour-body"></div>
+      <div class="tour-footer">
+        <button id="tour-btn-prev" class="tour-btn tour-btn-prev">← Back</button>
+        <button id="tour-btn-next" class="tour-btn tour-btn-next">Next →</button>
       </div>
     </div>
   </div>
