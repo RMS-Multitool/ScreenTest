@@ -22,6 +22,7 @@
       <a href="help.html" target="_blank" class="btn btn-ghost" title="User Guide">? Help</a>
       <button class="btn btn-ghost" id="btn-tour" title="Take a quick tour">▶ Tour</button>
       <button class="btn btn-secondary" id="btn-export-template">Export Template</button>
+      <button class="btn btn-secondary" id="btn-venue">🏟 Venue</button>
       <button class="btn btn-secondary" id="btn-screenshot">📷 Screenshot</button>
       <button class="btn btn-primary"   id="btn-fullscreen">⛶ Fullscreen</button>
     </div>
@@ -351,6 +352,29 @@
       <div class="tour-footer">
         <button id="tour-btn-prev" class="tour-btn tour-btn-prev">← Back</button>
         <button id="tour-btn-next" class="tour-btn tour-btn-next">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Venue Preview overlay ────────────────────────────────────── -->
+  <div id="venue-overlay" class="venue-overlay">
+    <div class="venue-topbar">
+      <span class="venue-hint">Drag the corner handles onto the LED screen corners</span>
+      <button class="btn btn-secondary btn-sm" id="btn-venue-save-img">📷 Save Image</button>
+      <button class="btn btn-ghost btn-icon" id="btn-venue-close">✕</button>
+    </div>
+    <div class="venue-stage" id="venue-stage">
+      <div class="venue-photo-container" id="venue-photo-container">
+        <img id="venue-photo" class="venue-photo" src="" alt="">
+        <div id="venue-screen-wrap" class="venue-screen-wrap"></div>
+        <div class="venue-handle" id="venue-handle-0" data-h="0"></div>
+        <div class="venue-handle" id="venue-handle-1" data-h="1"></div>
+        <div class="venue-handle" id="venue-handle-2" data-h="2"></div>
+        <div class="venue-handle" id="venue-handle-3" data-h="3"></div>
+      </div>
+      <div class="venue-upload-prompt" id="venue-upload-prompt">
+        <button class="btn btn-primary" id="btn-venue-upload">Upload Venue Photo</button>
+        <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.4)">JPG · PNG · WebP</div>
       </div>
     </div>
   </div>
