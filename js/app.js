@@ -1432,6 +1432,12 @@ const ScreenTest = (() => {
       position: 'right',
     },
     {
+      target: '#btn-venue',
+      title: 'Venue Preview',
+      body: 'See how your content looks on the actual physical screen. Upload a photo of the venue and the app overlays your content onto the LED screen at the correct perspective angle.',
+      position: 'bottom',
+    },
+    {
       target: '.header-actions',
       title: 'Export & Screenshot',
       body: 'Export Template creates a layout document with exact pixel dimensions for your design crew. Screenshot captures the full 3456 × 1152 px preview as a PNG.',
