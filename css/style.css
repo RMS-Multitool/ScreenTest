@@ -1343,6 +1343,7 @@ label { user-select: none; }
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.4px;
 }
+.venue-admin-only { display: none; }
 
 .venue-stage {
   flex: 1;
@@ -1394,6 +1395,7 @@ label { user-select: none; }
   touch-action: none;
 }
 .venue-handle:active { cursor: grabbing; }
+.venue-handle.venue-handle-locked { display: none; }
 
 .venue-upload-prompt {
   display: flex;
