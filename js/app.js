@@ -12,9 +12,10 @@ const ScreenTest = (() => {
     showSafeArea: false, showPipBorder: true
   };
 
-  const blobUrls     = { bg: null, fg: null };
-  const blobMeta     = { bg: null, fg: null };
-  const webcamStreams = { bg: null, fg: null };
+  const blobUrls          = { bg: null, fg: null };
+  const blobMeta          = { bg: null, fg: null };
+  const webcamStreams      = { bg: null, fg: null };
+  const screenShareStreams = { bg: null, fg: null };
   let library     = [];
   let customPips  = [];
   let brandAssets = [];
@@ -262,6 +263,13 @@ const ScreenTest = (() => {
       wcCard.innerHTML = `<div class="webcam-card-icon">📷</div><div class="holding-card-name">Live Webcam</div>`;
       wcCard.onclick = () => setLayerSource(layer, 'webcam', 'webcam');
       grid.appendChild(wcCard);
+      // Screen share card
+      const ssCard = document.createElement('div');
+      ssCard.className = 'holding-card holding-card-screenshare' + (state[layer].type === 'screenshare' ? ' active' : '');
+      ssCard.title = 'Share a window or screen (PowerPoint, Canva, etc.)';
+      ssCard.innerHTML = `<div class="webcam-card-icon">🖥</div><div class="holding-card-name">Screen Share</div>`;
+      ssCard.onclick = () => setLayerSource(layer, 'screenshare', 'screenshare');
+      grid.appendChild(ssCard);
     });
   }
 
@@ -286,6 +294,7 @@ const ScreenTest = (() => {
 
     if (blobUrls[layer]) { URL.revokeObjectURL(blobUrls[layer]); blobUrls[layer] = null; }
     if (webcamStreams[layer]) { webcamStreams[layer].getTracks().forEach(t => t.stop()); webcamStreams[layer] = null; }
+    if (screenShareStreams[layer]) { screenShareStreams[layer].getTracks().forEach(t => t.stop()); screenShareStreams[layer] = null; }
     div.innerHTML = '';
 
     if (src.type === 'none') {
@@ -317,6 +326,29 @@ const ScreenTest = (() => {
         syncFg2();
       } catch (err) {
         toast('Webcam access denied or unavailable', 'error');
+        state[layer] = { type: 'none', id: null };
+        div.innerHTML = `<div class="layer-placeholder"><div class="layer-placeholder-icon">${layer === 'bg' ? '🖥' : '📺'}</div><div>No ${layer === 'bg' ? 'Background' : 'Foreground'} Media</div></div>`;
+        syncFg2();
+      }
+      return;
+    }
+    if (src.type === 'screenshare') {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        toast('Screen capture not supported in this browser', 'error'); return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false });
+        screenShareStreams[layer] = stream;
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = video.muted = video.playsInline = true;
+        video.style.objectFit = fit;
+        div.appendChild(video);
+        // Auto-clear when user stops sharing via browser UI
+        stream.getVideoTracks()[0].addEventListener('ended', () => clearLayer(layer));
+        syncFg2();
+      } catch (err) {
+        if (err.name !== 'NotAllowedError') toast('Screen capture failed: ' + err.message, 'error');
         state[layer] = { type: 'none', id: null };
         div.innerHTML = `<div class="layer-placeholder"><div class="layer-placeholder-icon">${layer === 'bg' ? '🖥' : '📺'}</div><div>No ${layer === 'bg' ? 'Background' : 'Foreground'} Media</div></div>`;
         syncFg2();
@@ -383,6 +415,10 @@ const ScreenTest = (() => {
       inner.innerHTML = '<div class="layer-empty-hint">📷 Live Webcam</div>';
       return;
     }
+    if (src.type === 'screenshare') {
+      inner.innerHTML = '<div class="layer-empty-hint">🖥 Screen Share</div>';
+      return;
+    }
     if (src.type === 'library' && blobUrls[layer]) {
       const meta = blobMeta[layer] || (library.find(x => x.id === src.id) || {}).meta || {};
       const isVideo = meta.type && meta.type.startsWith('video/');
@@ -410,10 +446,11 @@ const ScreenTest = (() => {
     grid.querySelectorAll('.holding-card').forEach(c => {
       if (c.classList.contains('holding-card-webcam')) {
         c.classList.toggle('active', src.type === 'webcam');
+      } else if (c.classList.contains('holding-card-screenshare')) {
+        c.classList.toggle('active', src.type === 'screenshare');
       } else {
-        const id = c.querySelector('img') && c.querySelector('img').alt
-          ? HOLDINGS.find(h => c.querySelector('img').alt === h.name)?.id
-          : null;
+        const imgEl = c.querySelector('img');
+        const id = imgEl ? HOLDINGS.find(h => imgEl.alt === h.name)?.id : null;
         c.classList.toggle('active', src.type === 'holding' && src.id === id);
       }
     });
@@ -799,6 +836,7 @@ const ScreenTest = (() => {
 
   function clearLayer(layer) {
     if (webcamStreams[layer]) { webcamStreams[layer].getTracks().forEach(t => t.stop()); webcamStreams[layer] = null; }
+    if (screenShareStreams[layer]) { screenShareStreams[layer].getTracks().forEach(t => t.stop()); screenShareStreams[layer] = null; }
     state[layer] = { type: 'none', id: null };
     applyLayerMedia(layer); updateLayerPreview(layer);
     refreshHoldingActive(layer); refreshLibraryActive(); saveState();

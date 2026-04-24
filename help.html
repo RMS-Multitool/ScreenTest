@@ -351,10 +351,11 @@
         <li><a href="#s3">3. Background Layer</a></li>
         <li><a href="#s4">4. PIP / Overlay Layout</a></li>
         <li><a href="#s5">5. Foreground / PIP Content</a></li>
-        <li><a href="#s6">6. Brand Assets</a></li>
-        <li><a href="#s7">7. Media Library</a></li>
-        <li><a href="#s8">8. Exporting &amp; Screenshots</a></li>
-        <li><a href="#s9">9. Tips &amp; Troubleshooting</a></li>
+        <li><a href="#s6">6. Live Sources — Webcam &amp; Screen Share</a></li>
+        <li><a href="#s7">7. Brand Assets</a></li>
+        <li><a href="#s8">8. Media Library</a></li>
+        <li><a href="#s9">9. Exporting &amp; Screenshots</a></li>
+        <li><a href="#s10">10. Tips &amp; Troubleshooting</a></li>
       </ol>
     </div>
 
@@ -388,6 +389,13 @@
         <li><strong>Safe Area toggle</strong> — Enable this in the Screen panel to show a dashed yellow border 5% in from each edge. Content inside this border is safe from edge distortion on the physical screen.</li>
         <li><strong>PIP Border toggle</strong> — Shows a green outline around the active PIP zone so you can see its exact boundary in the preview.</li>
       </ul>
+
+      <h3>Drag files directly onto the preview</h3>
+      <p>You can drag image or video files straight onto the screen preview — no need to use the upload panels in the sidebar.</p>
+      <ul>
+        <li>Drop onto the <strong>background area</strong> → loads as the Background layer (blue highlight while dragging)</li>
+        <li>Drop onto a <strong>visible PIP zone</strong> → loads as the Foreground layer (green highlight while dragging)</li>
+      </ul>
     </section>
 
     <!-- Section 3 -->
@@ -411,6 +419,7 @@
 
       <h3>Holding Images</h3>
       <p>The Holding Images section contains pre-loaded test patterns and templates. Click any to preview it instantly — great for checking alignment before you have final content. An active holding image has a green border. Click it again to deselect.</p>
+      <p>Two additional live source options appear at the end of this grid — <strong>Live Webcam</strong> and <strong>Screen Share</strong>. See <a href="#s6">Section 6</a> for details.</p>
 
       <h3>Clear</h3>
       <p>Removes the current background without deleting the file from the library.</p>
@@ -458,7 +467,56 @@
 
     <!-- Section 6 -->
     <section id="s6">
-      <h2>6. Brand Assets</h2>
+      <h2>6. Live Sources — Webcam &amp; Screen Share</h2>
+      <p>Both the Background and Foreground Holding Images grids include two live source options at the end. These stream a live feed directly into the layer instead of playing a static file.</p>
+
+      <h3>Live Webcam</h3>
+      <p>Click the <strong>📷 Live Webcam</strong> card to stream your computer's camera directly into the background or foreground layer. The browser will ask for camera permission the first time.</p>
+      <ul>
+        <li>The feed is live — movement and changes appear in real time</li>
+        <li>Works with any camera the operating system recognises: built-in webcam, USB camera, or capture card</li>
+        <li>The camera automatically stops when you clear the layer or switch to another source</li>
+        <li>If camera permission is denied, a message will appear and the layer will reset to empty</li>
+      </ul>
+
+      <div class="tip-box">
+        <p>Use a capture card connected to a camera to bring in a live HDMI feed as if it were a webcam — the app will treat it the same way.</p>
+      </div>
+
+      <h3>Screen Share</h3>
+      <p>Click the <strong>🖥 Screen Share</strong> card to capture a specific window, application, or browser tab and stream it live into the layer. The browser's built-in window picker will appear.</p>
+      <ul>
+        <li>Select any open window — PowerPoint in slideshow mode, a Canva presentation, a video player, or any other application</li>
+        <li>Advancing slides in PowerPoint or Canva updates live in ScreenTest instantly</li>
+        <li>You can select a specific window, a monitor, or a single browser tab</li>
+        <li>The stream automatically clears from the layer when you click Stop Sharing</li>
+        <li>If you cancel the window picker without selecting anything, the layer stays unchanged</li>
+      </ul>
+
+      <div class="warn-box">
+        <p>While Screen Share is active, the browser displays a small "Stop sharing" notification bar. This is a browser security requirement and cannot be removed. It will not appear on the actual venue screen output.</p>
+      </div>
+
+      <h3>Using Screen Share with PowerPoint</h3>
+      <ul>
+        <li>Open your presentation in PowerPoint and start the slideshow (Slide Show → From Beginning, or press <kbd>F5</kbd>)</li>
+        <li>In ScreenTest, click Screen Share in the Background or Foreground Holding Images grid</li>
+        <li>In the window picker, select the PowerPoint slideshow window</li>
+        <li>Advancing slides in PowerPoint updates the preview in ScreenTest in real time</li>
+      </ul>
+
+      <h3>Using Screen Share with Canva</h3>
+      <ul>
+        <li>Open your Canva presentation in a browser tab and click <strong>Present</strong></li>
+        <li>In ScreenTest, click Screen Share</li>
+        <li>In the window picker, select the Canva tab or its presentation window</li>
+        <li>Advance slides in Canva as normal — the preview updates live</li>
+      </ul>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="s7">
+      <h2>7. Brand Assets</h2>
       <p>Brand Assets are a dedicated library for logos, sponsor images, and branded graphics you use regularly across different events.</p>
 
       <p>Supported formats: <span class="badge">JPG</span><span class="badge">PNG</span><span class="badge">SVG</span> (no video, no WebP).</p>
@@ -476,9 +534,9 @@
       </div>
     </section>
 
-    <!-- Section 7 -->
-    <section id="s7">
-      <h2>7. Media Library</h2>
+    <!-- Section 8 -->
+    <section id="s8">
+      <h2>8. Media Library</h2>
       <p>The Media Library shows every image and video you have uploaded (brand assets appear in both the Brand Assets panel and here).</p>
 
       <p>Each card shows:</p>
@@ -493,9 +551,9 @@
       <p>Items are listed newest first. Deleted items are permanently removed from browser storage.</p>
     </section>
 
-    <!-- Section 8 -->
-    <section id="s8">
-      <h2>8. Exporting &amp; Screenshots</h2>
+    <!-- Section 9 -->
+    <section id="s9">
+      <h2>9. Exporting &amp; Screenshots</h2>
 
       <h3>Export Template</h3>
       <p>Generates a professional PNG layout document showing the full screen configuration. Click <strong>Export Template</strong> in the top bar.</p>
@@ -519,9 +577,9 @@
       </div>
     </section>
 
-    <!-- Section 9 -->
-    <section id="s9">
-      <h2>9. Tips &amp; Troubleshooting</h2>
+    <!-- Section 10 -->
+    <section id="s10">
+      <h2>10. Tips &amp; Troubleshooting</h2>
 
       <p class="trouble-q">My uploaded files have disappeared.</p>
       <p>All media is stored locally in your browser. Clearing browser cache or site data permanently removes all uploaded files. Before clearing your cache, download any important files directly.</p>
@@ -537,6 +595,18 @@
 
       <p class="trouble-q">The preview scale is very small.</p>
       <p>The preview scales to fit the available window space. The screen is 3:1 — much wider than tall — so it will always appear narrow on a standard monitor. Use the fullscreen button for the largest possible view.</p>
+
+      <p class="trouble-q">The webcam card shows an error or the layer stays empty.</p>
+      <p>The browser needs camera permission. Check the address bar for a blocked camera icon and click it to allow access, then try clicking Live Webcam again. On some machines, camera permission may also need to be granted at the operating system level (macOS: System Settings → Privacy & Security → Camera).</p>
+
+      <p class="trouble-q">Screen Share stops working or the layer goes blank unexpectedly.</p>
+      <p>This happens when the "Stop sharing" button in the browser notification bar is clicked, or when the shared window is closed. The layer clears automatically when sharing ends. Simply click Screen Share again to start a new session.</p>
+
+      <p class="trouble-q">I can't see my PowerPoint slideshow in the window picker.</p>
+      <p>Make sure the slideshow is already running in fullscreen or windowed presentation mode before opening the window picker. If you started the picker before launching the slideshow, cancel and try again after PowerPoint is in presentation mode. On macOS you may also need to grant the browser screen recording permission: System Settings → Privacy & Security → Screen Recording.</p>
+
+      <p class="trouble-q">The Screen Share option is not visible in the Holding Images grid.</p>
+      <p>Screen capture requires a secure context (HTTPS or localhost). If you are accessing ScreenTest over plain HTTP on a remote network, screen share and webcam will not be available. Contact your system administrator to ensure the app is served over HTTPS.</p>
     </section>
 
   </main>
