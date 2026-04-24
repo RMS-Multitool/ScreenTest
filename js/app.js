@@ -1396,7 +1396,7 @@ const ScreenTest = (() => {
     {
       target: '#panel-pip',
       title: 'PIP / Overlay Layout',
-      body: 'Choose how your foreground content is positioned on screen. Pick a built-in preset or build a custom zone with precise pixel-perfect positioning.',
+      body: 'Choose how your foreground content is positioned on screen. Select a preset to instantly change where the PIP zone appears.',
       position: 'right',
     },
     {
