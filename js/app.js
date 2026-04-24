@@ -24,6 +24,16 @@ const ScreenTest = (() => {
   const ADMIN_CODE = 'fohp2026';
   let pipAdminUnlocked = sessionStorage.getItem('pip-admin') === '1';
 
+  let venueModalOpen    = false;
+  let venueDragHandle   = null;
+  let venuePhotoBlobUrl = null;
+  let venueCorners = [
+    { x: 0.2, y: 0.2 },
+    { x: 0.8, y: 0.2 },
+    { x: 0.8, y: 0.8 },
+    { x: 0.2, y: 0.8 }
+  ];
+
   function getPipById(id) {
     const builtin = PipPresets.PRESETS.find(p => p.id === id);
     if (builtin) return builtin;
@@ -91,6 +101,7 @@ const ScreenTest = (() => {
     ro.observe(el.previewWrapper);
     updatePreviewSize();
     bindEvents();
+    initVenueEvents();
     initTour();
   }
 
@@ -193,6 +204,7 @@ const ScreenTest = (() => {
       syncFg2();
       updateMetaPip();
       saveState();
+      if (venueModalOpen) refreshVenueScreen();
     };
 
     const fadeIn = () => {
@@ -301,6 +313,7 @@ const ScreenTest = (() => {
     if (src.type === 'none') {
       div.innerHTML = `<div class="layer-placeholder"><div class="layer-placeholder-icon">${layer === 'bg' ? '🖥' : '📺'}</div><div>No ${layer === 'bg' ? 'Background' : 'Foreground'} Media</div></div>`;
       syncFg2();
+      if (venueModalOpen) refreshVenueScreen();
       return;
     }
     if (src.type === 'holding') {
@@ -310,6 +323,7 @@ const ScreenTest = (() => {
       img.src = h.path; img.style.objectFit = fit;
       div.appendChild(img);
       syncFg2();
+      if (venueModalOpen) refreshVenueScreen();
       return;
     }
     if (src.type === 'webcam') {
@@ -325,6 +339,7 @@ const ScreenTest = (() => {
         video.style.objectFit = fit;
         div.appendChild(video);
         syncFg2();
+        if (venueModalOpen) refreshVenueScreen();
       } catch (err) {
         toast('Webcam access denied or unavailable', 'error');
         state[layer] = { type: 'none', id: null };
@@ -348,6 +363,7 @@ const ScreenTest = (() => {
         // Auto-clear when user stops sharing via browser UI
         stream.getVideoTracks()[0].addEventListener('ended', () => clearLayer(layer));
         syncFg2();
+        if (venueModalOpen) refreshVenueScreen();
       } catch (err) {
         if (err.name !== 'NotAllowedError') toast('Screen capture failed: ' + err.message, 'error');
         state[layer] = { type: 'none', id: null };
@@ -375,6 +391,7 @@ const ScreenTest = (() => {
       media.style.objectFit = fit;
       div.appendChild(media);
       syncFg2();
+      if (venueModalOpen) refreshVenueScreen();
     }
   }
 
@@ -439,6 +456,7 @@ const ScreenTest = (() => {
       const m2 = el.layerFg2.querySelector('img, video');
       if (m2) m2.style.objectFit = fit;
     }
+    if (venueModalOpen) refreshVenueScreen();
   }
 
   function refreshHoldingActive(layer) {
@@ -830,7 +848,7 @@ const ScreenTest = (() => {
     $('btn-screenshot').onclick = takeScreenshot;
     $('btn-fullscreen').onclick = openFullscreen;
     el.fullscreenOverlay.onclick = closeFullscreen;
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreen(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !venueModalOpen) closeFullscreen(); });
 
     bindPreviewDrop();
   }
@@ -1496,7 +1514,377 @@ const ScreenTest = (() => {
     popover.style.cssText = css;
   }
 
-  return { init, startTour, endTour };
+  // ── Venue Preview ────────────────────────────────────────────────
+  const VENUE_W = 1000, VENUE_H = 333;
+
+  function solveHomography(src, dst) {
+    const A = [], b = [];
+    for (let i = 0; i < 4; i++) {
+      const sx = src[i][0], sy = src[i][1];
+      const dx = dst[i][0], dy = dst[i][1];
+      A.push([-sx, -sy, -1, 0, 0, 0, dx * sx, dx * sy]);
+      b.push(-dx);
+      A.push([0, 0, 0, -sx, -sy, -1, dy * sx, dy * sy]);
+      b.push(-dy);
+    }
+    const h = gaussianElim(A, b);
+    return h;
+  }
+
+  function gaussianElim(A, b) {
+    const n = 8;
+    const M = A.map((row, i) => [...row, b[i]]);
+    for (let col = 0; col < n; col++) {
+      let maxRow = col;
+      for (let row = col + 1; row < n; row++)
+        if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+      [M[col], M[maxRow]] = [M[maxRow], M[col]];
+      const pivot = M[col][col];
+      if (Math.abs(pivot) < 1e-10) continue;
+      for (let j = col; j <= n; j++) M[col][j] /= pivot;
+      for (let row = 0; row < n; row++) {
+        if (row === col) continue;
+        const factor = M[row][col];
+        for (let j = col; j <= n; j++) M[row][j] -= factor * M[col][j];
+      }
+    }
+    return M.map(row => row[n]);
+  }
+
+  function computeMatrix3d(corners, cW, cH) {
+    const src = [[0, 0], [VENUE_W, 0], [VENUE_W, VENUE_H], [0, VENUE_H]];
+    const dst = corners.map(c => [c.x * cW, c.y * cH]);
+    const h = solveHomography(src, dst);
+    return [
+      h[0], h[3], 0, h[6],
+      h[1], h[4], 0, h[7],
+      0,    0,    1, 0,
+      h[2], h[5], 0, 1
+    ].join(',');
+  }
+
+  function applyVenueTransform() {
+    const container = $('venue-photo-container');
+    const wrap = $('venue-screen-wrap');
+    if (!container || !wrap) return;
+    const cW = container.offsetWidth;
+    const cH = container.offsetHeight;
+    if (!cW || !cH) return;
+    const m = computeMatrix3d(venueCorners, cW, cH);
+    wrap.style.transform = `matrix3d(${m})`;
+    venueCorners.forEach((c, i) => {
+      const h = $(`venue-handle-${i}`);
+      if (h) { h.style.left = (c.x * cW) + 'px'; h.style.top = (c.y * cH) + 'px'; }
+    });
+  }
+
+  function refreshVenueScreen() {
+    const wrap = $('venue-screen-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const bgDiv = document.createElement('div');
+    bgDiv.className = 'layer layer-bg';
+    bgDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+    cloneLayer(el.layerBg, bgDiv, state.bgFit);
+    wrap.appendChild(bgDiv);
+
+    const pip = getPipById(state.pip);
+    if (PipPresets.isDual(pip)) {
+      pip.slots.forEach(slot => {
+        const ps = PipPresets.toStyle(slot);
+        const div = document.createElement('div');
+        div.className = 'layer layer-fg pip-slot';
+        Object.assign(div.style, { position: 'absolute', top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps);
+        div.classList.toggle('show-border', state.showPipBorder);
+        cloneLayer(el.layerFg, div, state.fgFit);
+        wrap.appendChild(div);
+      });
+    } else {
+      const fgDiv = document.createElement('div');
+      fgDiv.className = 'layer layer-fg';
+      const ps = PipPresets.toStyle(pip.fg);
+      if (!ps) { fgDiv.style.display = 'none'; }
+      else { Object.assign(fgDiv.style, { position: 'absolute', top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }, ps); }
+      fgDiv.classList.toggle('show-border', state.showPipBorder);
+      cloneLayer(el.layerFg, fgDiv, state.fgFit);
+      wrap.appendChild(fgDiv);
+    }
+  }
+
+  function openVenuePreview() {
+    const overlay = $('venue-overlay');
+    overlay.classList.add('active');
+    venueModalOpen = true;
+    loadVenueState().then(() => {
+      if (venuePhotoBlobUrl) {
+        showVenuePhoto(venuePhotoBlobUrl);
+      }
+      refreshVenueScreen();
+      applyVenueTransform();
+    });
+  }
+
+  function closeVenuePreview() {
+    $('venue-overlay').classList.remove('active');
+    venueModalOpen = false;
+  }
+
+  async function loadVenueState() {
+    try {
+      const corners = await ScreenTestDB.getSetting('venueCorners');
+      if (corners && corners.length === 4) venueCorners = corners;
+    } catch (e) {}
+    try {
+      const blob = await ScreenTestDB.getSetting('venuePhotoBlob');
+      if (blob) {
+        if (venuePhotoBlobUrl) URL.revokeObjectURL(venuePhotoBlobUrl);
+        venuePhotoBlobUrl = URL.createObjectURL(blob);
+      }
+    } catch (e) {}
+  }
+
+  async function saveVenueState() {
+    try { await ScreenTestDB.saveSetting('venueCorners', venueCorners); } catch (e) {}
+  }
+
+  function showVenuePhoto(url) {
+    const img = $('venue-photo');
+    const container = $('venue-photo-container');
+    const prompt = $('venue-upload-prompt');
+    img.src = url;
+    img.onload = () => {
+      container.classList.add('has-photo');
+      prompt.style.display = 'none';
+      applyVenueTransform();
+    };
+  }
+
+  function initVenueEvents() {
+    $('btn-venue').onclick = openVenuePreview;
+    $('btn-venue-close').onclick = closeVenuePreview;
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && venueModalOpen) closeVenuePreview(); });
+
+    $('btn-venue-upload').onclick = () => {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/webp,image/gif';
+      inp.onchange = async () => {
+        const file = inp.files[0];
+        if (!file) return;
+        if (venuePhotoBlobUrl) URL.revokeObjectURL(venuePhotoBlobUrl);
+        venuePhotoBlobUrl = URL.createObjectURL(file);
+        showVenuePhoto(venuePhotoBlobUrl);
+        try { await ScreenTestDB.saveSetting('venuePhotoBlob', file); } catch (e) {}
+      };
+      inp.click();
+    };
+
+    $('btn-venue-save-img').onclick = venueExportImage;
+
+    const container = $('venue-photo-container');
+
+    container.addEventListener('mousedown', venueHandleMouseDown);
+    document.addEventListener('mousemove', venueHandleMouseMove);
+    document.addEventListener('mouseup',   venueHandleMouseUp);
+
+    container.addEventListener('touchstart', venueHandleTouchStart, { passive: false });
+    document.addEventListener('touchmove',   venueHandleTouchMove,  { passive: false });
+    document.addEventListener('touchend',    venueHandleTouchEnd);
+
+    new ResizeObserver(() => { if (venueModalOpen) applyVenueTransform(); }).observe(container);
+  }
+
+  function venueHandleMouseDown(e) {
+    const h = e.target.closest('.venue-handle');
+    if (!h) return;
+    venueDragHandle = +h.dataset.h;
+    e.preventDefault();
+  }
+
+  function venueHandleMouseMove(e) {
+    if (venueDragHandle === null) return;
+    updateVenueHandle(venueDragHandle, e.clientX, e.clientY);
+  }
+
+  function venueHandleMouseUp() { venueDragHandle = null; }
+
+  function venueHandleTouchStart(e) {
+    const h = e.target.closest('.venue-handle');
+    if (!h) return;
+    venueDragHandle = +h.dataset.h;
+    e.preventDefault();
+  }
+
+  function venueHandleTouchMove(e) {
+    if (venueDragHandle === null) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    updateVenueHandle(venueDragHandle, t.clientX, t.clientY);
+  }
+
+  function venueHandleTouchEnd() { venueDragHandle = null; }
+
+  function updateVenueHandle(idx, clientX, clientY) {
+    const container = $('venue-photo-container');
+    const r = container.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    const y = Math.max(0, Math.min(1, (clientY - r.top)  / r.height));
+    venueCorners[idx] = { x, y };
+    applyVenueTransform();
+    saveVenueState();
+  }
+
+  function venueExportImage() {
+    const photoEl = $('venue-photo');
+    if (!photoEl.src || !photoEl.naturalWidth) { toast('Upload a venue photo first', 'error'); return; }
+
+    const nW = photoEl.naturalWidth;
+    const nH = photoEl.naturalHeight;
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = nW;
+    canvas.height = nH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(photoEl, 0, 0, nW, nH);
+
+    const src = [[0, 0], [VENUE_W, 0], [VENUE_W, VENUE_H], [0, VENUE_H]];
+    const dst = venueCorners.map(c => [c.x * nW, c.y * nH]);
+    const h = solveHomography(src, dst);
+
+    const GRID = 20;
+    const offscreen = document.createElement('canvas');
+    offscreen.width = VENUE_W; offscreen.height = VENUE_H;
+    const octx = offscreen.getContext('2d');
+
+    const wrap = $('venue-screen-wrap');
+    if (wrap && wrap.offsetWidth) {
+      octx.drawImage(wrap.querySelector('img, video') || wrap, 0, 0, VENUE_W, VENUE_H);
+    }
+
+    html2canvasVenueWrap(wrap, offscreen, octx).then(() => {
+      drawWarpedMesh(ctx, offscreen, h, GRID);
+      canvas.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `venue-preview-${Date.now()}.png`;
+        a.click();
+        toast('Venue image saved!', 'success');
+      }, 'image/png');
+    });
+  }
+
+  async function html2canvasVenueWrap(wrap, canvas, ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!wrap) return;
+    const bgEl = wrap.querySelector('.layer-bg img, .layer-bg video');
+    if (bgEl) {
+      ctx.save();
+      applyObjectFitTransform(ctx, bgEl, 0, 0, VENUE_W, VENUE_H, state.bgFit);
+      ctx.restore();
+    }
+    const pip = getPipById(state.pip);
+    if (PipPresets.isDual(pip)) {
+      pip.slots.forEach(slot => {
+        const px = PipPresets.toPixels(slot, VENUE_W, VENUE_H);
+        const fgEl = wrap.querySelector('.layer-fg img, .layer-fg video');
+        if (fgEl) {
+          ctx.save();
+          applyObjectFitTransform(ctx, fgEl, px.x, px.y, px.w, px.h, state.fgFit);
+          ctx.restore();
+        }
+      });
+    } else if (pip.fg) {
+      const px = PipPresets.toPixels(pip.fg, VENUE_W, VENUE_H);
+      const fgEl = wrap.querySelector('.layer-fg img, .layer-fg video');
+      if (fgEl) {
+        ctx.save();
+        applyObjectFitTransform(ctx, fgEl, px.x, px.y, px.w, px.h, state.fgFit);
+        ctx.restore();
+      }
+    }
+  }
+
+  function applyObjectFitTransform(ctx, media, x, y, w, h, fit) {
+    const mW = media.videoWidth || media.naturalWidth || w;
+    const mH = media.videoHeight || media.naturalHeight || h;
+    if (!mW || !mH) return;
+    if (fit === 'fill') { ctx.drawImage(media, x, y, w, h); return; }
+    const cAR = w / h, mAR = mW / mH;
+    if (fit === 'cover') {
+      let sx = 0, sy = 0, sw = mW, sh = mH;
+      if (mAR > cAR) { sw = mH * cAR; sx = (mW - sw) / 2; }
+      else            { sh = mW / cAR; sy = (mH - sh) / 2; }
+      ctx.drawImage(media, sx, sy, sw, sh, x, y, w, h);
+    } else {
+      let dw, dh;
+      if (mAR > cAR) { dw = w; dh = w / mAR; } else { dh = h; dw = h * mAR; }
+      ctx.drawImage(media, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    }
+  }
+
+  function applyHomography(h, x, y) {
+    const w = h[6] * x + h[7] * y + 1;
+    return [(h[0] * x + h[1] * y + h[2]) / w, (h[3] * x + h[4] * y + h[5]) / w];
+  }
+
+  function drawWarpedMesh(ctx, src, h, GRID) {
+    const sw = src.width, sh = src.height;
+    for (let gy = 0; gy < GRID; gy++) {
+      for (let gx = 0; gx < GRID; gx++) {
+        const u0 = gx / GRID, u1 = (gx + 1) / GRID;
+        const v0 = gy / GRID, v1 = (gy + 1) / GRID;
+        const sx0 = u0 * sw, sy0 = v0 * sh;
+        const sx1 = u1 * sw, sy1 = v1 * sh;
+
+        const [dx00x, dx00y] = applyHomography(h, sx0, sy0);
+        const [dx10x, dx10y] = applyHomography(h, sx1, sy0);
+        const [dx01x, dx01y] = applyHomography(h, sx0, sy1);
+        const [dx11x, dx11y] = applyHomography(h, sx1, sy1);
+
+        drawTexturedTriangle(ctx, src,
+          sx0, sy0, dx00x, dx00y,
+          sx1, sy0, dx10x, dx10y,
+          sx0, sy1, dx01x, dx01y);
+        drawTexturedTriangle(ctx, src,
+          sx1, sy0, dx10x, dx10y,
+          sx1, sy1, dx11x, dx11y,
+          sx0, sy1, dx01x, dx01y);
+      }
+    }
+  }
+
+  function drawTexturedTriangle(ctx, img,
+    sx0, sy0, dx0, dy0,
+    sx1, sy1, dx1, dy1,
+    sx2, sy2, dx2, dy2) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dx0, dy0);
+    ctx.lineTo(dx1, dy1);
+    ctx.lineTo(dx2, dy2);
+    ctx.closePath();
+    ctx.clip();
+
+    const dxA = dx1 - dx0, dyA = dy1 - dy0;
+    const dxB = dx2 - dx0, dyB = dy2 - dy0;
+    const sxA = sx1 - sx0, syA = sy1 - sy0;
+    const sxB = sx2 - sx0, syB = sy2 - sy0;
+
+    const det = sxA * syB - syA * sxB;
+    if (Math.abs(det) < 1e-6) { ctx.restore(); return; }
+
+    const a =  (dxA * syB - dxB * syA) / det;
+    const b =  (dxB * sxA - dxA * sxB) / det;
+    const c = dx0 - a * sx0 - b * sy0;
+    const d =  (dyA * syB - dyB * syA) / det;
+    const e_=  (dyB * sxA - dyA * sxB) / det;
+    const f = dy0 - d * sx0 - e_ * sy0;
+
+    ctx.transform(a, d, b, e_, c, f);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+
+  return { init, startTour, endTour, openVenuePreview };
 })();
 
 document.addEventListener('DOMContentLoaded', () => ScreenTest.init());

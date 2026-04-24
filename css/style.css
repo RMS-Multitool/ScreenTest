@@ -1316,3 +1316,90 @@ label { user-select: none; }
   font-weight: 700;
   letter-spacing: 0.5px;
 }
+
+/* ── Venue Preview overlay ──────────────────────────────────────── */
+.venue-overlay {
+  position: fixed;
+  inset: 0;
+  background: #080c12;
+  z-index: 9000;
+  display: none;
+  flex-direction: column;
+}
+.venue-overlay.active { display: flex; }
+
+.venue-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(0,0,0,0.6);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.venue-hint {
+  flex: 1;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.4px;
+}
+
+.venue-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.venue-photo-container {
+  position: relative;
+  display: none;
+  line-height: 0;
+}
+.venue-photo-container.has-photo { display: block; }
+
+.venue-photo {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 54px);
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+.venue-screen-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1000px;
+  height: 333px;
+  transform-origin: 0 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.venue-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #c6f135;
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px rgba(0,0,0,0.7);
+  cursor: grab;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  touch-action: none;
+}
+.venue-handle:active { cursor: grabbing; }
+
+.venue-upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+}
