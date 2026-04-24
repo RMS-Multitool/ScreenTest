@@ -1638,10 +1638,12 @@ const ScreenTest = (() => {
 
   function applyVenueAdminUI() {
     const unlocked = venueAdminUnlocked;
-    document.querySelectorAll('.venue-admin-only').forEach(el => { el.style.display = unlocked ? '' : 'none'; });
+    $('venue-overlay').classList.toggle('venue-admin-mode', unlocked);
     document.querySelectorAll('.venue-handle').forEach(el => el.classList.toggle('venue-handle-locked', !unlocked));
     $('venue-hint').style.display = unlocked ? '' : 'none';
     $('btn-venue-admin-lock').textContent = unlocked ? '🔓' : '🔒';
+    const hasPhoto = $('venue-photo-container').classList.contains('has-photo');
+    $('venue-upload-prompt').style.display = unlocked && !hasPhoto ? 'flex' : 'none';
   }
 
   function closeVenuePreview() {
