@@ -1441,7 +1441,7 @@ const ScreenTest = (() => {
     {
       target: '#btn-venue',
       title: 'Venue Preview',
-      body: 'See how your content looks on the actual physical screen. Upload a photo of the venue and the app overlays your content onto the LED screen at the correct perspective angle.',
+      body: 'See exactly how your content will look on the physical screen. The app overlays your content onto a photo of the venue at the correct perspective angle.',
       position: 'bottom',
     },
     {
