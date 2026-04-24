@@ -882,6 +882,111 @@ label { user-select: none; }
   letter-spacing: 0.5px;
 }
 
+/* ── Tour overlay ───────────────────────────────────────────────── */
+.tour-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+}
+.tour-overlay.active { display: block; }
+
+.tour-spotlight {
+  position: fixed;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  z-index: 9001;
+  transition: opacity 0.2s, top 0.28s ease, left 0.28s ease, width 0.28s ease, height 0.28s ease;
+}
+
+.tour-popover {
+  position: fixed;
+  z-index: 9002;
+  width: 264px;
+  background: #0e1420;
+  border: 1px solid #1B75BB;
+  border-radius: 10px;
+  padding: 16px 18px 14px;
+  pointer-events: all;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  transition: top 0.28s ease, left 0.28s ease;
+}
+
+.tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.tour-step-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1B75BB;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tour-skip {
+  background: none;
+  border: none;
+  color: #96b4cc;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.tour-skip:hover { opacity: 1; color: #eaf2fc; }
+
+.tour-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #eaf2fc;
+  margin-bottom: 7px;
+  line-height: 1.3;
+}
+
+.tour-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #96b4cc;
+  margin-bottom: 14px;
+}
+
+.tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tour-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.tour-btn-prev {
+  background: transparent;
+  border: 1px solid #1a2a3e;
+  color: #96b4cc;
+}
+.tour-btn-prev:hover { border-color: #4991C9; color: #eaf2fc; }
+
+.tour-btn-next {
+  background: #1B75BB;
+  border: 1px solid transparent;
+  color: #eaf2fc;
+}
+.tour-btn-next:hover { background: #4991C9; }
+
 /* ── Divider ────────────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--border); margin: 2px 0; }
 
