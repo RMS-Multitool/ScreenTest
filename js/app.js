@@ -807,9 +807,16 @@ const ScreenTest = (() => {
   function cloneLayer(src, dest, fit) {
     const m = src.querySelector('img, video');
     if (!m) return;
-    const clone = m.tagName === 'VIDEO'
-      ? Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true })
-      : Object.assign(document.createElement('img'), { src: m.src });
+    let clone;
+    if (m.tagName === 'VIDEO' && m.srcObject) {
+      clone = document.createElement('video');
+      clone.srcObject = m.srcObject;
+      clone.autoplay = clone.muted = clone.playsInline = true;
+    } else if (m.tagName === 'VIDEO') {
+      clone = Object.assign(document.createElement('video'), { src: m.src, autoplay: true, loop: true, muted: true, playsInline: true });
+    } else {
+      clone = Object.assign(document.createElement('img'), { src: m.src });
+    }
     clone.style.cssText = `width:100%;height:100%;object-fit:${fit}`;
     dest.appendChild(clone);
   }
