@@ -24,9 +24,11 @@ const ScreenTest = (() => {
   const ADMIN_CODE = 'fohp2026';
   let pipAdminUnlocked = sessionStorage.getItem('pip-admin') === '1';
 
-  let venueModalOpen    = false;
-  let venueDragHandle   = null;
-  let venuePhotoBlobUrl = null;
+  let venueModalOpen      = false;
+  let venueDragHandle     = null;
+  let venuePhotoBlobUrl   = null;
+  let venueAdminUnlocked  = false;
+  let venueDefaultConfig  = null;
   let venueCorners = [
     { x: 0.2, y: 0.2 },
     { x: 0.8, y: 0.2 },
@@ -86,6 +88,12 @@ const ScreenTest = (() => {
     el.metaPhysChip    = $('meta-phys-chip');
 
     try { await ScreenTestDB.open(); } catch (e) { toast('Media library unavailable in this browser', 'error'); }
+
+    // Load venue default config committed to the repo (silent fail if absent)
+    try {
+      const r = await fetch('./assets/venue/config.json', { cache: 'no-cache' });
+      if (r.ok) venueDefaultConfig = await r.json();
+    } catch (e) {}
 
     await loadState();
     await loadCustomPips();
@@ -1612,16 +1620,28 @@ const ScreenTest = (() => {
   }
 
   function openVenuePreview() {
-    const overlay = $('venue-overlay');
-    overlay.classList.add('active');
+    $('venue-overlay').classList.add('active');
     venueModalOpen = true;
+    applyVenueAdminUI();
     loadVenueState().then(() => {
-      if (venuePhotoBlobUrl) {
+      // Use default config if no locally saved photo and a default exists
+      if (!venuePhotoBlobUrl && venueDefaultConfig) {
+        venueCorners = venueDefaultConfig.corners.map(c => ({ x: c[0], y: c[1] }));
+        showVenuePhoto(venueDefaultConfig.photoSrc);
+      } else if (venuePhotoBlobUrl) {
         showVenuePhoto(venuePhotoBlobUrl);
       }
       refreshVenueScreen();
       applyVenueTransform();
     });
+  }
+
+  function applyVenueAdminUI() {
+    const unlocked = venueAdminUnlocked;
+    document.querySelectorAll('.venue-admin-only').forEach(el => { el.style.display = unlocked ? '' : 'none'; });
+    document.querySelectorAll('.venue-handle').forEach(el => el.classList.toggle('venue-handle-locked', !unlocked));
+    $('venue-hint').style.display = unlocked ? '' : 'none';
+    $('btn-venue-admin-lock').textContent = unlocked ? '🔓' : '🔒';
   }
 
   function closeVenuePreview() {
@@ -1664,7 +1684,22 @@ const ScreenTest = (() => {
     $('btn-venue-close').onclick = closeVenuePreview;
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && venueModalOpen) closeVenuePreview(); });
 
-    $('btn-venue-upload').onclick = () => {
+    $('btn-venue-admin-lock').onclick = () => {
+      if (venueAdminUnlocked) {
+        venueAdminUnlocked = false;
+        applyVenueAdminUI();
+        return;
+      }
+      const code = prompt('Enter admin code:');
+      if (code === ADMIN_CODE) {
+        venueAdminUnlocked = true;
+        applyVenueAdminUI();
+      } else if (code !== null) {
+        toast('Incorrect admin code', 'error');
+      }
+    };
+
+    const triggerUpload = () => {
       const inp = document.createElement('input');
       inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/webp,image/gif';
       inp.onchange = async () => {
@@ -1677,8 +1712,11 @@ const ScreenTest = (() => {
       };
       inp.click();
     };
+    $('btn-venue-upload').onclick = triggerUpload;
+    $('btn-venue-upload-btn').onclick = triggerUpload;
 
     $('btn-venue-save-img').onclick = venueExportImage;
+    $('btn-venue-export-default').onclick = venueExportDefault;
 
     const container = $('venue-photo-container');
 
@@ -1695,7 +1733,7 @@ const ScreenTest = (() => {
 
   function venueHandleMouseDown(e) {
     const h = e.target.closest('.venue-handle');
-    if (!h) return;
+    if (!h || !venueAdminUnlocked) return;
     venueDragHandle = +h.dataset.h;
     e.preventDefault();
   }
@@ -1709,7 +1747,7 @@ const ScreenTest = (() => {
 
   function venueHandleTouchStart(e) {
     const h = e.target.closest('.venue-handle');
-    if (!h) return;
+    if (!h || !venueAdminUnlocked) return;
     venueDragHandle = +h.dataset.h;
     e.preventDefault();
   }
@@ -1882,6 +1920,35 @@ const ScreenTest = (() => {
     ctx.transform(a, d, b, e_, c, f);
     ctx.drawImage(img, 0, 0);
     ctx.restore();
+  }
+
+  function venueExportDefault() {
+    const photoEl = $('venue-photo');
+    if (!photoEl.src || !photoEl.naturalWidth) { toast('Upload a venue photo first', 'error'); return; }
+
+    // Download config.json
+    const config = {
+      photoSrc: './assets/venue/photo.jpg',
+      corners: venueCorners.map(c => [c.x, c.y])
+    };
+    const cfgBlob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const cfgA = document.createElement('a');
+    cfgA.href = URL.createObjectURL(cfgBlob);
+    cfgA.download = 'config.json';
+    cfgA.click();
+
+    // Download the venue photo as photo.jpg
+    const canvas = document.createElement('canvas');
+    canvas.width = photoEl.naturalWidth;
+    canvas.height = photoEl.naturalHeight;
+    canvas.getContext('2d').drawImage(photoEl, 0, 0);
+    canvas.toBlob(blob => {
+      const imgA = document.createElement('a');
+      imgA.href = URL.createObjectURL(blob);
+      imgA.download = 'photo.jpg';
+      imgA.click();
+      toast('Commit both files to assets/venue/ in the repository', 'success');
+    }, 'image/jpeg', 0.92);
   }
 
   return { init, startTour, endTour, openVenuePreview };
