@@ -1346,6 +1346,28 @@ label { user-select: none; }
 .venue-admin-only { display: none; }
 .venue-overlay.venue-admin-mode .venue-admin-only { display: inline-flex; }
 
+.venue-brightness-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.venue-brightness-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
+}
+.venue-brightness-ctrl input[type=range] {
+  width: 90px;
+  accent-color: #f0c040;
+  cursor: pointer;
+}
+.venue-brightness-val {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  min-width: 28px;
+}
+
 .venue-stage {
   flex: 1;
   display: flex;

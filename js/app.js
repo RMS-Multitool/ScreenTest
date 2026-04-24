@@ -1733,6 +1733,16 @@ const ScreenTest = (() => {
     $('btn-venue-save-img').onclick = venueExportImage;
     $('btn-venue-export-default').onclick = venueExportDefault;
 
+    const brightnessSlider = $('venue-brightness');
+    const brightnessVal    = $('venue-brightness-val');
+    const applyBrightness  = () => {
+      const v = brightnessSlider.value / 100;
+      brightnessVal.textContent = v.toFixed(1) + '×';
+      $('venue-screen-wrap').style.filter = `brightness(${v}) saturate(1.1)`;
+    };
+    brightnessSlider.addEventListener('input', applyBrightness);
+    applyBrightness();
+
     const container = $('venue-photo-container');
 
     container.addEventListener('mousedown', venueHandleMouseDown);
